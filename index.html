@@ -77,6 +77,13 @@ ul.list li:hover{background:var(--panel)}
 .setup form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 footer{border-top:1px solid var(--rule);color:var(--ink-faint);font-size:12.5px;padding-block:16px 40px;display:flex;flex-wrap:wrap;gap:6px 18px}
 .hidden{display:none!important}
+details#creds{border-bottom:1px solid var(--rule);padding-bottom:6px}
+details#creds summary{cursor:pointer;list-style:none;padding:4px 0}
+details#creds summary::-webkit-details-marker{display:none}
+.sumline{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint)}
+.sumline::before{content:"+ ";font-family:var(--mono)}
+details#creds[open] .sumline::before{content:"- "}
+details#creds summary:hover .sumline{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -130,6 +137,25 @@ footer{border-top:1px solid var(--rule);color:var(--ink-faint);font-size:12.5px;
     </section>
 
     <section>
+      <details id="creds">
+        <summary><span class="sumline">Credentials</span></summary>
+      <p class="note">Encrypted in this browser, then stored as GitHub secrets. Update the Coursera cookie when a run fails with a 403.</p>
+      <form class="controls" id="cauthForm" style="padding-top:12px">
+        <label class="field" for="cauthIn">Coursera cookie
+          <input id="cauthIn" type="password" autocomplete="off" spellcheck="false" placeholder="CAUTH value from coursera.org"></label>
+        <button type="submit">Update cookie</button>
+        <span class="chip" id="cauthAge"></span>
+      </form>
+      <form class="controls" id="gdriveForm" style="padding-top:12px;border-bottom:none">
+        <label class="field" for="gdriveIn">Google Drive token
+          <input id="gdriveIn" type="password" autocomplete="off" spellcheck="false" placeholder='{"access_token":...} from rclone authorize "drive"'></label>
+        <button type="submit">Update token</button>
+        <span class="chip" id="gdriveAge"></span>
+      </form>
+      <p class="note" id="secretNote"></p>
+      </details>
+    </section>
+    <section>
       <h2>Your courses</h2>
       <div class="bar">
         <label class="field" for="q" style="flex:1 1 240px">Search
@@ -148,23 +174,6 @@ footer{border-top:1px solid var(--rule);color:var(--ink-faint);font-size:12.5px;
       <p class="note" id="runsNote">Loading runs...</p>
     </section>
 
-    <section>
-      <h2>Credentials</h2>
-      <p class="note">Encrypted in this browser, then stored as GitHub secrets. Update the Coursera cookie when a run fails with a 403.</p>
-      <form class="controls" id="cauthForm" style="padding-top:12px">
-        <label class="field" for="cauthIn">Coursera cookie
-          <input id="cauthIn" type="password" autocomplete="off" spellcheck="false" placeholder="CAUTH value from coursera.org"></label>
-        <button type="submit">Update cookie</button>
-        <span class="chip" id="cauthAge"></span>
-      </form>
-      <form class="controls" id="gdriveForm" style="padding-top:12px;border-bottom:none">
-        <label class="field" for="gdriveIn">Google Drive token
-          <input id="gdriveIn" type="password" autocomplete="off" spellcheck="false" placeholder='{"access_token":...} from rclone authorize "drive"'></label>
-        <button type="submit">Update token</button>
-        <span class="chip" id="gdriveAge"></span>
-      </form>
-      <p class="note" id="secretNote"></p>
-    </section>
   </div>
 </main>
 
