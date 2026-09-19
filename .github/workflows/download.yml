@@ -1,5 +1,7 @@
 name: Coursera to Google Drive
 
+run-name: "${{ inputs.action == 'list-courses' && 'List courses' || format('Download {0}', inputs.courses) }}"
+
 on:
   workflow_dispatch:
     inputs:
@@ -41,6 +43,8 @@ jobs:
   list-courses:
     if: inputs.action == 'list-courses'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Check secrets
         run: |
@@ -49,8 +53,21 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -q coursera-helper setuptools
+      - uses: actions/checkout@v4
+
       - name: Your enrolled courses
-        run: coursera-helper --cauth "$CAUTH" --list-courses
+        run: |
+          coursera-helper --cauth "$CAUTH" --list-courses | tee raw.txt
+          grep -E '^[a-z0-9][a-z0-9-]*$' raw.txt | sort -u | jq -R . | jq -s . > courses.json
+          rm raw.txt
+
+      - name: Save the list for the web page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add courses.json
+          git diff --staged --quiet || git commit -m "Update course list"
+          git push
 
   plan:
     if: inputs.action == 'download'

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course Shelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#f7f6f3; --panel:#fffefc; --ink:#1c1d1a; --ink-soft:#5e605a; --ink-faint:#8b8d86;
+  --rule:#dedbd3; --rule-soft:#eceae4; --accent:#0b6e99; --accent-ink:#ffffff;
+  --run:#b45309; --done:#15803d; --fail:#b3261e; --idle:#a9aba4;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#16181a; --panel:#1d2023; --ink:#eceae4; --ink-soft:#a6a89f; --ink-faint:#76786f;
+    --rule:#33373b; --rule-soft:#262a2d; --accent:#4bb3dd; --accent-ink:#0d1214;
+    --run:#e0a154; --done:#68c283; --fail:#ef8b81; --idle:#5b5e58;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+header.top{border-bottom:1px solid var(--rule);background:var(--panel)}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;padding-block:20px 14px}
+h1{font-size:20px;font-weight:600;margin:0;letter-spacing:-.01em}
+.brand .sub{color:var(--ink-faint);font-size:13px}
+.brand .spacer{flex:1 1 auto}
+.counts{display:flex;flex-wrap:wrap;gap:28px;padding-block:6px 18px}
+.count .n{font:500 26px/1.1 var(--mono);font-variant-numeric:tabular-nums;display:block}
+.count .k{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint)}
+.count.live .n{color:var(--run)}
+main{padding-block:22px 64px}
+section+section{margin-top:30px}
+h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;margin:0 0 10px}
+.controls{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end;padding-bottom:16px;border-bottom:1px solid var(--rule)}
+label.field{display:flex;flex-direction:column;gap:5px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint)}
+select,input[type=text],input[type=password]{font:14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:3px;padding:7px 9px}
+input[type=text],input[type=password]{min-width:min(280px,72vw)}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.check{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft);text-transform:none;letter-spacing:0;padding-bottom:7px}
+button{font:500 14px var(--sans);cursor:pointer;border-radius:3px;border:1px solid var(--rule);background:var(--panel);color:var(--ink);padding:7px 12px}
+button:hover:not(:disabled){border-color:var(--ink-faint)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.go{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.small{padding:5px 10px;font-size:13px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 0}
+.bar .spacer{flex:1 1 auto}
+.bar .sel{font:13px var(--mono);color:var(--ink-faint);font-variant-numeric:tabular-nums}
+ul.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+ul.list li{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid var(--rule-soft)}
+ul.list li:hover{background:var(--panel)}
+.slug{font:14px var(--mono);word-break:break-word;flex:1 1 auto;min-width:0}
+.chip{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--idle);flex:none}
+.chip.running .dot{background:var(--run);animation:pulse 1.4s ease-in-out infinite}
+.chip.running{color:var(--run)}
+.chip.done .dot{background:var(--done)} .chip.done{color:var(--done)}
+.chip.failed .dot{background:var(--fail)} .chip.failed{color:var(--fail)}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.chip.running .dot{animation:none}}
+.runs{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.runs li{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;padding:9px 2px;border-bottom:1px solid var(--rule-soft)}
+.runs .title{font:13px var(--mono);flex:1 1 220px;min-width:0;word-break:break-word}
+.runs .when{color:var(--ink-faint);font-size:12px;font-variant-numeric:tabular-nums}
+.note{color:var(--ink-soft);font-size:13px;margin:10px 0 0}
+.note.warn{color:var(--fail)}
+.setup{border:1px solid var(--rule);border-radius:4px;background:var(--panel);padding:18px;margin-bottom:24px}
+.setup ol{margin:10px 0 14px;padding-left:20px;color:var(--ink-soft);font-size:13.5px}
+.setup li{margin-bottom:5px}
+.setup form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+footer{border-top:1px solid var(--rule);color:var(--ink-faint);font-size:12.5px;padding-block:16px 40px;display:flex;flex-wrap:wrap;gap:6px 18px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Course Shelf</h1>
+      <span class="sub">Coursera to Google Drive</span>
+      <span class="spacer"></span>
+      <button id="forget" class="small hidden" type="button">Change token</button>
+    </div>
+    <div class="counts">
+      <div class="count live"><span class="n" id="cRunning">0</span><span class="k">Downloading now</span></div>
+      <div class="count"><span class="n" id="cDone">0</span><span class="k">Courses in Drive</span></div>
+      <div class="count"><span class="n" id="cCourses">0</span><span class="k">Courses enrolled</span></div>
+      <div class="count"><span class="n" id="cRuns">0</span><span class="k">Runs all time</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="setup" id="setup">
+    <h2>Connect once</h2>
+    <p class="note">This page runs downloads on GitHub Actions. It needs a GitHub token, which stays in this browser and is sent only to github.com.</p>
+    <ol>
+      <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com token settings</a>.</li>
+      <li>Under Repository access choose <strong>Only select repositories</strong>, then <strong>coursera-to-drive</strong>.</li>
+      <li>Under Permissions set <strong>Actions</strong> to <strong>Read and write</strong>.</li>
+      <li>Generate the token, copy it, and paste it below.</li>
+    </ol>
+    <form id="tokenForm">
+      <label class="field" for="token">GitHub token
+        <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_..."></label>
+      <button class="go" type="submit">Save token</button>
+    </form>
+    <p class="note warn hidden" id="tokenErr"></p>
+  </div>
+
+  <div id="app" class="hidden">
+    <section>
+      <h2>Download settings</h2>
+      <div class="controls">
+        <label class="field" for="res">Resolution
+          <select id="res"><option>720p</option><option>540p</option><option>360p</option></select></label>
+        <label class="field" for="subs">Subtitles
+          <select id="subs"><option value="en">English</option><option value="en,fr">English, French</option><option value="en,es">English, Spanish</option></select></label>
+        <label class="field" for="folder">Drive folder
+          <input id="folder" type="text" value="Coursera" style="min-width:160px"></label>
+        <label class="check"><input id="nb" type="checkbox" checked> Include notebooks</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your courses</h2>
+      <div class="bar">
+        <label class="field" for="q" style="flex:1 1 240px">Search
+          <input id="q" type="text" placeholder="Type to filter, e.g. data" style="width:100%"></label>
+        <span class="sel" id="selCount">0 selected</span>
+        <button id="clearSel" class="small" type="button">Clear</button>
+        <button id="goSel" class="go" type="button" disabled>Download selected</button>
+      </div>
+      <ul class="list" id="courses"></ul>
+      <p class="note" id="listNote"></p>
+    </section>
+
+    <section>
+      <h2>Recent activity</h2>
+      <ul class="runs" id="runs"></ul>
+      <p class="note" id="runsNote">Loading runs...</p>
+    </section>
+  </div>
+</main>
+
+<footer class="wrap">
+  <a href="https://github.com/YakubuYinusaT/coursera-to-drive/actions" target="_blank" rel="noopener">Actions log</a>
+  <a href="https://drive.google.com/drive/folders/11uFhJVpLb7vaRLE_t11KPV2afgz9AmTi" target="_blank" rel="noopener">Coursera folder in Drive</a>
+  <span>Two courses download at a time, six hours each.</span>
+</footer>
+
+<script>
+const OWNER = "YakubuYinusaT", REPO = "coursera-to-drive", WF = "download.yml";
+const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const $ = id => document.getElementById(id);
+const state = { token: "", courses: [], runs: [], byCourse: new Map(), selected: new Set(), timer: 0 };
+
+/* ---------- token, kept in this browser only ---------- */
+try { state.token = localStorage.getItem("cs_token") || ""; } catch (e) {}
+
+function showApp(on) {
+  $("setup").classList.toggle("hidden", on);
+  $("app").classList.toggle("hidden", !on);
+  $("forget").classList.toggle("hidden", !on);
+}
+
+$("tokenForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const t = $("token").value.trim();
+  if (!t) return;
+  $("tokenErr").classList.add("hidden");
+  try {
+    const r = await fetch(API, { headers: { Authorization: "Bearer " + t, Accept: "application/vnd.github+json" } });
+    if (!r.ok) throw new Error(r.status === 401 ? "GitHub rejected this token. Copy it again, it is only shown once."
+      : r.status === 404 ? "This token cannot see the repository. Give it access to coursera-to-drive."
+      : "GitHub returned " + r.status + ".");
+    state.token = t;
+    try { localStorage.setItem("cs_token", t); } catch (e) {}
+    $("token").value = "";
+    showApp(true); start();
+  } catch (err) {
+    $("tokenErr").textContent = err.message;
+    $("tokenErr").classList.remove("hidden");
+  }
+});
+
+$("forget").addEventListener("click", () => {
+  state.token = "";
+  try { localStorage.removeItem("cs_token"); } catch (e) {}
+  clearInterval(state.timer);
+  showApp(false);
+});
+
+const gh = (path, opts = {}) => fetch(API + path, {
+  ...opts,
+  headers: { Authorization: "Bearer " + state.token, Accept: "application/vnd.github+json", ...(opts.headers || {}) }
+});
+
+/* ---------- courses ---------- */
+async function loadCourses() {
+  try {
+    const r = await fetch("courses.json", { cache: "no-store" });
+    state.courses = await r.json();
+  } catch (e) {
+    state.courses = [];
+    $("listNote").textContent = "Could not read the course list. Run List courses from the Actions tab to rebuild it.";
+  }
+  $("cCourses").textContent = state.courses.length;
+  renderCourses();
+}
+
+function statusOf(slug) {
+  const run = state.byCourse.get(slug);
+  if (!run) return { cls: "", label: "Not downloaded" };
+  if (run.status !== "completed") return { cls: "running", label: run.status === "queued" ? "Queued" : "Downloading" };
+  if (run.conclusion === "success") return { cls: "done", label: "In Drive" };
+  if (run.conclusion === "cancelled") return { cls: "", label: "Stopped" };
+  return { cls: "failed", label: "Failed" };
+}
+
+function renderCourses() {
+  const q = $("q").value.trim().toLowerCase();
+  const list = $("courses");
+  const shown = state.courses.filter(s => !q || s.includes(q));
+  list.textContent = "";
+  for (const slug of shown) {
+    const st = statusOf(slug);
+    const li = document.createElement("li");
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = state.selected.has(slug);
+    cb.setAttribute("aria-label", "Select " + slug);
+    cb.addEventListener("change", () => {
+      cb.checked ? state.selected.add(slug) : state.selected.delete(slug);
+      renderSelection();
+    });
+
+    const name = document.createElement("span");
+    name.className = "slug"; name.textContent = slug;
+
+    const chip = document.createElement("span");
+    chip.className = "chip " + st.cls;
+    const dot = document.createElement("span"); dot.className = "dot";
+    chip.append(dot, document.createTextNode(st.label));
+
+    const btn = document.createElement("button");
+    btn.className = "small"; btn.type = "button";
+    btn.textContent = st.cls === "running" ? "Running" : st.cls === "done" ? "Again" : "Download";
+    btn.disabled = st.cls === "running";
+    btn.addEventListener("click", () => dispatch([slug], btn));
+
+    li.append(cb, name, chip, btn);
+    list.append(li);
+  }
+  $("listNote").textContent = shown.length ? `${shown.length} of ${state.courses.length} courses` : "No course matches that search.";
+}
+
+function renderSelection() {
+  $("selCount").textContent = state.selected.size + " selected";
+  $("goSel").disabled = state.selected.size === 0;
+}
+
+$("q").addEventListener("input", renderCourses);
+$("clearSel").addEventListener("click", () => { state.selected.clear(); renderSelection(); renderCourses(); });
+$("goSel").addEventListener("click", () => dispatch([...state.selected], $("goSel")));
+
+/* ---------- start a run ---------- */
+async function dispatch(slugs, btn) {
+  if (!slugs.length) return;
+  const was = btn.textContent;
+  btn.disabled = true; btn.textContent = "Starting...";
+  try {
+    const r = await gh(`/actions/workflows/${WF}/dispatches`, {
+      method: "POST",
+      body: JSON.stringify({
+        ref: "main",
+        inputs: {
+          action: "download",
+          courses: slugs.join(" "),
+          resolution: $("res").value,
+          subtitles: $("subs").value,
+          notebooks: $("nb").checked,
+          drive_folder: $("folder").value.trim() || "Coursera"
+        }
+      })
+    });
+    if (!r.ok) {
+      const body = await r.text();
+      throw new Error(r.status === 403 ? "This token is not allowed to start workflows. Give it Actions: Read and write."
+        : "GitHub returned " + r.status + ". " + body.slice(0, 160));
+    }
+    state.selected.clear(); renderSelection();
+    $("runsNote").textContent = "Started. GitHub takes a few seconds to pick it up.";
+    setTimeout(refresh, 4000);
+  } catch (err) {
+    btn.disabled = false; btn.textContent = was;
+    $("runsNote").textContent = err.message;
+  }
+}
+
+/* ---------- runs ---------- */
+const ago = iso => {
+  const m = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  const h = Math.round(m / 60);
+  if (h < 24) return h + (h === 1 ? " hour ago" : " hours ago");
+  const d = Math.round(h / 24);
+  return d + (d === 1 ? " day ago" : " days ago");
+};
+
+function coursesIn(run) {
+  const name = run.display_title || run.name || "";
+  return name.startsWith("Download ") ? name.slice(9).trim().split(/\s+/) : [];
+}
+
+async function refresh() {
+  try {
+    const r = await gh("/actions/runs?per_page=60");
+    if (!r.ok) throw new Error(r.status === 401 ? "The token expired or was revoked. Use Change token." : "GitHub returned " + r.status + ".");
+    const data = await r.json();
+    state.runs = data.workflow_runs || [];
+    $("cRuns").textContent = data.total_count ?? state.runs.length;
+
+    // newest run wins for each course, because the list arrives newest first
+    const byCourse = new Map();
+    for (const run of state.runs) for (const slug of coursesIn(run)) if (!byCourse.has(slug)) byCourse.set(slug, run);
+    state.byCourse = byCourse;
+
+    let running = 0, done = 0;
+    for (const [, run] of byCourse) {
+      if (run.status !== "completed") running++;
+      else if (run.conclusion === "success") done++;
+    }
+    $("cRunning").textContent = running;
+    $("cDone").textContent = done;
+
+    renderRuns();
+    renderCourses();
+  } catch (err) {
+    $("runsNote").textContent = err.message;
+  }
+}
+
+function renderRuns() {
+  const ul = $("runs");
+  ul.textContent = "";
+  for (const run of state.runs.slice(0, 12)) {
+    const st = run.status !== "completed"
+      ? { cls: "running", label: run.status === "queued" ? "Queued" : "Running" }
+      : run.conclusion === "success" ? { cls: "done", label: "Finished" }
+      : run.conclusion === "cancelled" ? { cls: "", label: "Stopped" }
+      : { cls: "failed", label: run.conclusion === "failure" ? "Failed" : run.conclusion };
+
+    const li = document.createElement("li");
+    const chip = document.createElement("span");
+    chip.className = "chip " + st.cls;
+    const dot = document.createElement("span"); dot.className = "dot";
+    chip.append(dot, document.createTextNode(st.label));
+
+    const title = document.createElement("span");
+    title.className = "title"; title.textContent = run.display_title || run.name;
+
+    const when = document.createElement("span");
+    when.className = "when"; when.textContent = ago(run.run_started_at || run.created_at);
+
+    const link = document.createElement("a");
+    link.href = run.html_url; link.target = "_blank"; link.rel = "noopener";
+    link.textContent = "log"; link.style.fontSize = "12.5px";
+
+    li.append(chip, title, when, link);
+    ul.append(li);
+  }
+  $("runsNote").textContent = state.runs.length ? "" : "No runs yet. Pick a course above.";
+}
+
+function start() {
+  loadCourses();
+  refresh();
+  clearInterval(state.timer);
+  state.timer = setInterval(() => { if (!document.hidden) refresh(); }, 20000);
+}
+
+if (state.token) { showApp(true); start(); } else { showApp(false); loadCourses(); }
+</script>
+</body>
+</html>
