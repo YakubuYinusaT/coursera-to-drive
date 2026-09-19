@@ -147,6 +147,24 @@ footer{border-top:1px solid var(--rule);color:var(--ink-faint);font-size:12.5px;
       <ul class="runs" id="runs"></ul>
       <p class="note" id="runsNote">Loading runs...</p>
     </section>
+
+    <section>
+      <h2>Credentials</h2>
+      <p class="note">Encrypted in this browser, then stored as GitHub secrets. Update the Coursera cookie when a run fails with a 403.</p>
+      <form class="controls" id="cauthForm" style="padding-top:12px">
+        <label class="field" for="cauthIn">Coursera cookie
+          <input id="cauthIn" type="password" autocomplete="off" spellcheck="false" placeholder="CAUTH value from coursera.org"></label>
+        <button type="submit">Update cookie</button>
+        <span class="chip" id="cauthAge"></span>
+      </form>
+      <form class="controls" id="gdriveForm" style="padding-top:12px;border-bottom:none">
+        <label class="field" for="gdriveIn">Google Drive token
+          <input id="gdriveIn" type="password" autocomplete="off" spellcheck="false" placeholder='{"access_token":...} from rclone authorize "drive"'></label>
+        <button type="submit">Update token</button>
+        <span class="chip" id="gdriveAge"></span>
+      </form>
+      <p class="note" id="secretNote"></p>
+    </section>
   </div>
 </main>
 
@@ -381,9 +399,73 @@ function renderRuns() {
   $("runsNote").textContent = state.runs.length ? "" : "No runs yet. Pick a course above.";
 }
 
+/* ---------- secrets: encrypted here, then sent to GitHub ---------- */
+let sodiumReady = null;
+const getSodium = () => sodiumReady ??= import("https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.15/+esm")
+  .then(async m => { const s = m.default; await s.ready; return s; });
+
+async function saveSecret(name, value, btn, input) {
+  const was = btn.textContent;
+  btn.disabled = true; btn.textContent = "Saving...";
+  $("secretNote").classList.remove("warn");
+  try {
+    const kr = await gh("/actions/secrets/public-key");
+    if (!kr.ok) throw new Error(kr.status === 403
+      ? "Your GitHub token cannot change secrets. Open its settings and set Secrets to Read and write."
+      : "GitHub returned " + kr.status + " when fetching the encryption key.");
+    const key = await kr.json();
+    const sodium = await getSodium();
+    const sealed = sodium.crypto_box_seal(
+      sodium.from_string(value),
+      sodium.from_base64(key.key, sodium.base64_variants.ORIGINAL));
+
+    const pr = await gh("/actions/secrets/" + name, {
+      method: "PUT",
+      body: JSON.stringify({
+        encrypted_value: sodium.to_base64(sealed, sodium.base64_variants.ORIGINAL),
+        key_id: key.key_id
+      })
+    });
+    if (!pr.ok) throw new Error("GitHub returned " + pr.status + " when saving the secret.");
+
+    input.value = "";
+    $("secretNote").textContent = (name === "COURSERA_CAUTH" ? "Coursera cookie" : "Drive token") + " updated. New runs will use it.";
+    loadSecretAges();
+  } catch (err) {
+    $("secretNote").textContent = err.message;
+    $("secretNote").classList.add("warn");
+  } finally {
+    btn.disabled = false; btn.textContent = was;
+  }
+}
+
+$("cauthForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("cauthIn").value.trim();
+  if (v) saveSecret("COURSERA_CAUTH", v, e.target.querySelector("button"), $("cauthIn"));
+});
+$("gdriveForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("gdriveIn").value.replace(/\s/g, "");
+  if (v) saveSecret("GDRIVE_TOKEN", v, e.target.querySelector("button"), $("gdriveIn"));
+});
+
+async function loadSecretAges() {
+  try {
+    const r = await gh("/actions/secrets");
+    if (!r.ok) return;
+    const data = await r.json();
+    for (const s of data.secrets || []) {
+      const el = s.name === "COURSERA_CAUTH" ? $("cauthAge") : s.name === "GDRIVE_TOKEN" ? $("gdriveAge") : null;
+      if (el) el.textContent = "Updated " + ago(s.updated_at);
+    }
+  } catch (e) {}
+}
+
 function start() {
   loadCourses();
   refresh();
+  loadSecretAges();
   clearInterval(state.timer);
   state.timer = setInterval(() => { if (!document.hidden) refresh(); }, 20000);
 }
