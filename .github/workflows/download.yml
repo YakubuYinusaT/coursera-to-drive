@@ -90,7 +90,9 @@ jobs:
           curl -fsSL https://rclone.org/install.sh | sudo bash
 
       - name: Check Google Drive access
-        run: rclone lsd gdrive: --max-depth 1 > /dev/null && echo "Drive OK"
+        run: |
+          rclone lsd gdrive: --max-depth 1 > /dev/null
+          echo "Drive OK"
 
       - name: Download ${{ matrix.course }}
         env:
