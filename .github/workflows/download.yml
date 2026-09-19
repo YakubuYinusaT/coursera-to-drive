@@ -1,0 +1,116 @@
+name: Coursera to Google Drive
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do"
+        type: choice
+        options: [download, list-courses]
+        default: download
+      courses:
+        description: "Course slugs, separated by spaces (from list-courses)"
+        type: string
+        default: ""
+      resolution:
+        description: "Video resolution"
+        type: choice
+        options: ["720p", "540p", "360p"]
+        default: "720p"
+      subtitles:
+        description: "Subtitle languages, comma separated"
+        type: string
+        default: "en"
+      notebooks:
+        description: "Also download Jupyter notebooks"
+        type: boolean
+        default: true
+      drive_folder:
+        description: "Folder in Google Drive"
+        type: string
+        default: "Coursera"
+
+env:
+  # rclone reads its remote from these, so no config file is needed
+  RCLONE_CONFIG_GDRIVE_TYPE: drive
+  RCLONE_CONFIG_GDRIVE_SCOPE: drive
+  RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+  CAUTH: ${{ secrets.COURSERA_CAUTH }}
+
+jobs:
+  list-courses:
+    if: inputs.action == 'list-courses'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q coursera-helper setuptools
+      - name: Your enrolled courses
+        run: coursera-helper --cauth "$CAUTH" --list-courses
+
+  plan:
+    if: inputs.action == 'download'
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.split.outputs.matrix }}
+    steps:
+      - id: split
+        env:
+          COURSES: ${{ inputs.courses }}
+        run: |
+          if [ -z "$(echo $COURSES)" ]; then
+            echo "::error::Enter at least one course slug. Run the list-courses action to see them."
+            exit 1
+          fi
+          echo "matrix=$(printf '%s\n' $COURSES | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
+
+  download:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        course: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tools
+        run: |
+          pip install -q coursera-helper setuptools
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      - name: Check Google Drive access
+        run: rclone lsd gdrive: --max-depth 1 > /dev/null && echo "Drive OK"
+
+      - name: Download ${{ matrix.course }}
+        env:
+          COURSE: ${{ matrix.course }}
+          RES: ${{ inputs.resolution }}
+          SUBS: ${{ inputs.subtitles }}
+          NOTEBOOKS: ${{ inputs.notebooks }}
+        run: |
+          extra=""
+          [ "$NOTEBOOKS" = "true" ] && extra="--download-notebooks"
+          coursera-helper --cauth "$CAUTH" --path dl \
+            --video-resolution "$RES" --subtitle-language "$SUBS" \
+            --download-delay 2 --resume $extra "$COURSE"
+
+      # Runs even if the download failed or timed out, so partial progress is kept
+      - name: Upload to Google Drive
+        if: always()
+        env:
+          FOLDER: ${{ inputs.drive_folder }}
+        run: |
+          [ -d dl ] || { echo "Nothing downloaded"; exit 0; }
+          du -sh dl
+          rclone copy dl "gdrive:$FOLDER" --ignore-existing --transfers 4 --stats 30s --stats-one-line -v
