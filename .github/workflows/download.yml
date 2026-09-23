@@ -57,8 +57,18 @@ jobs:
 
       - name: Your enrolled courses
         run: |
-          coursera-helper --cauth "$CAUTH" --list-courses | tee raw.txt
-          grep -E '^[a-z0-9][a-z0-9-]*$' raw.txt | sort -u | jq -R . | jq -s . > courses.json
+          # the tool logs the course names on stderr, so capture both streams
+          coursera-helper --cauth "$CAUTH" --list-courses > raw.txt 2>&1 || true
+          cat raw.txt
+          grep -E '^[a-z0-9][a-z0-9-]*$' raw.txt | sort -u | jq -R . | jq -s . > new.json
+          count=$(jq length new.json)
+          echo "Found $count course names"
+          if [ "$count" -lt 5 ]; then
+            echo "::error::Coursera returned no course list. The CAUTH cookie has probably expired, so the saved list was left untouched."
+            rm -f new.json raw.txt
+            exit 1
+          fi
+          mv new.json courses.json
           rm raw.txt
 
       - name: Save the list for the web page
