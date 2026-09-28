@@ -122,6 +122,7 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
     <span class="sub" id="libStat">Loading library...</span>
     <span class="spacer"></span>
     <a href="./" class="sub">Downloads</a>
+    <button id="signinSmall" class="small hidden" type="button">Sign in</button>
     <button id="signout" class="small hidden" type="button">Sign out</button>
   </div>
 </header>
@@ -207,6 +208,7 @@ const S = {
   progress: {}, lastItem: {}, collapsed: {}, filter: "all", sort: "name"
 };
 
+const TOKEN_KEY = "cs_token";
 const store = {
   get(k, fallback) { try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch (e) { return fallback; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
@@ -233,13 +235,11 @@ function buildTokenClient() {
     prompt: "",
     callback: res => {
       if (res.error) return showSetupError(explain(res.error));
-      S.token = res.access_token;
+      keepToken(res.access_token, Number(res.expires_in) || 3600);
       store.set("cs_granted", true);
       $("setupStatus").textContent = "";
-      $("setup").classList.add("hidden");
-      $("app").classList.remove("hidden");
-      $("signout").classList.remove("hidden");
-      loadIndex();
+      showApp();
+      if (S.pendingTranscript) { const it = S.pendingTranscript; S.pendingTranscript = null; loadTranscript(it); }
     },
     error_callback: err => showSetupError(explain(err?.type || err?.message || "unknown"))
   });
@@ -282,15 +282,41 @@ $("clearClient").addEventListener("click", () => {
 
 $("signout").addEventListener("click", () => {
   if (S.token) google.accounts.oauth2.revoke(S.token, () => {});
-  S.token = ""; store.del("cs_granted");
-  $("app").classList.add("hidden");
-  $("signout").classList.add("hidden");
-  $("setup").classList.remove("hidden");
+  S.token = ""; store.del("cs_granted"); store.del(TOKEN_KEY);
+  markSignedIn(false);
 });
+
+function keepToken(token, expiresIn) {
+  S.token = token;
+  store.set(TOKEN_KEY, { token, exp: Date.now() + (expiresIn - 120) * 1000 });
+  markSignedIn(true);
+}
+
+function loadKeptToken() {
+  const kept = store.get(TOKEN_KEY, null);
+  if (kept?.token && kept.exp > Date.now()) { S.token = kept.token; return true; }
+  store.del(TOKEN_KEY);
+  return false;
+}
+
+function markSignedIn(on) {
+  $("signout").classList.toggle("hidden", !on);
+  $("signinSmall").classList.toggle("hidden", on);
+}
+
+function showApp() {
+  $("setup").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  if (!S.loaded) { S.loaded = true; loadIndex(); }
+}
 
 const driveGet = async path => {
   const r = await fetch("https://www.googleapis.com/drive/v3/" + path, { headers: { Authorization: "Bearer " + S.token } });
-  if (r.status === 401) { buildTokenClient()?.requestAccessToken({ prompt: "" }); throw new Error("Session expired, sign in again."); }
+  if (r.status === 401) {
+    store.del(TOKEN_KEY); S.token = ""; markSignedIn(false);
+    buildTokenClient()?.requestAccessToken({ prompt: "" });
+    throw new Error("Signing you in again, one moment.");
+  }
   if (!r.ok) throw new Error("Drive returned " + r.status);
   return r;
 };
@@ -588,6 +614,17 @@ async function loadTranscript(item) {
   box.classList.add("hidden");
   box.textContent = "";
   if (!item.transcript) return;
+  if (!S.token) {
+    S.pendingTranscript = item;
+    const p = document.createElement("p");
+    p.textContent = "Sign in with Google to read transcripts. Video plays either way.";
+    const b = document.createElement("button");
+    b.className = "small"; b.type = "button"; b.textContent = "Sign in";
+    b.addEventListener("click", signIn);
+    box.append(p, b);
+    box.classList.remove("hidden");
+    return;
+  }
   try {
     const r = await driveGet(`files/${item.transcript.id}?alt=media`);
     const cues = parseCues(await r.text());
@@ -627,37 +664,49 @@ function parseCues(raw) {
 /* ---------- boot ---------- */
 // config.json carries the Google client ID for every browser, so the setup box is only a fallback
 async function boot() {
+  let haveClient = false;
   try {
     const r = await fetch("config.json?t=" + Date.now(), { cache: "no-store" });
     if (r.ok) {
       const cfg = await r.json();
-      if (cfg.googleClientId && cfg.googleClientId.endsWith(".apps.googleusercontent.com")) {
+      if (cfg.googleClientId?.endsWith(".apps.googleusercontent.com")) {
         S.clientId = cfg.googleClientId;
-        $("setup").querySelector("ol").classList.add("hidden");
-        $("setup").querySelector(".row").classList.add("hidden");
-        $("setupStatus").textContent = "";
-        $("signinBig").classList.remove("hidden");
-        signIn();
-        return;
+        haveClient = true;
       }
     }
   } catch (e) { /* fall back to pasting an ID */ }
-  if (S.clientId) {
+  if (!haveClient && !S.clientId) {
+    $("clientId").value = "";
+    $("setupStatus").textContent = "Paste your Google client ID to finish setup.";
+    return;
+  }
+  if (!haveClient) {
     $("clientId").value = S.clientId;
     $("clearClient").classList.remove("hidden");
-    $("setupStatus").textContent = "Client ID saved. Click Sign in with Google.";
+  } else {
+    $("setup").querySelector("ol").classList.add("hidden");
+    $("setup").querySelector(".row").classList.add("hidden");
   }
+
+  // the library and playback need no token at all, so open them immediately
+  const signedIn = loadKeptToken();
+  markSignedIn(signedIn);
+  showApp();
+  // renew quietly in the background; Google only interrupts if the grant is gone
+  if (!signedIn && store.get("cs_granted", false)) setTimeout(() => signIn(true), 600);
 }
 
-function signIn() {
+function signIn(quiet) {
   const client = buildTokenClient();
-  if (!client) { setTimeout(signIn, 400); return; }
+  if (!client) { setTimeout(() => signIn(quiet), 400); return; }
   $("setupErr").classList.add("hidden");
-  $("setupStatus").textContent = "Opening Google sign-in...";
+  if (!quiet) $("setupStatus").textContent = "Opening Google sign-in...";
   try { client.requestAccessToken({ prompt: store.get("cs_granted", false) ? "" : "consent" }); }
-  catch (e) { showSetupError(explain(e.message || "unknown")); }
+  catch (e) { if (!quiet) showSetupError(explain(e.message || "unknown")); }
 }
-$("signinBig").addEventListener("click", signIn);
+
+$("signinBig").addEventListener("click", () => signIn(false));
+$("signinSmall").addEventListener("click", () => signIn(false));
 
 $("sort").value = S.sort;
 for (const c of $("filters").children) c.classList.toggle("on", c.dataset.f === S.filter);
