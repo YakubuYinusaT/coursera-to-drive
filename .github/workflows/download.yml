@@ -224,7 +224,9 @@ jobs:
             jq -c '[ .[] | {path: .Path, name: .Name, size: .Size, mime: .MimeType, id: .ID} ]' raw.json > "library/$course.json"
             n=$(jq length "library/$course.json")
             v=$(jq '[.[] | select(.mime // "" | startswith("video/"))] | length' "library/$course.json")
-            jq -cn --arg slug "$course" --argjson files "$n" --argjson videos "$v" '{slug: $slug, files: $files, videos: $videos}' >> index.tmp
+            b=$(jq '[.[].size // 0] | add // 0' "library/$course.json")
+            sec=$(jq '[.[] | .path | split("/") | .[0]] | unique | length' "library/$course.json")
+            jq -cn --arg slug "$course" --argjson files "$n" --argjson videos "$v" --argjson bytes "$b" --argjson sections "$sec"               '{slug: $slug, files: $files, videos: $videos, bytes: $bytes, sections: $sections}' >> index.tmp
             echo "  $course: $n files, $v videos"
           done < courses.txt
           jq -s --arg when "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{indexed: $when, courses: .}' index.tmp > library/index.json
