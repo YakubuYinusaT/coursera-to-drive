@@ -1,5 +1,5 @@
 {
-  "synced": "2026-09-28T19:41:34Z",
+  "synced": "2026-09-28T20:39:52Z",
   "folder": "Coursera",
   "courses": [
     "10k-women-10",
@@ -298,19 +298,30 @@
     "startup-valuation-methods",
     "startup101",
     "strategicthinking",
+    "strategy-and-game-theory-for-management",
     "supervised-learning-and-its-applications-in-marketing",
     "supply-chain-digitization-strategy-and-design",
+    "systems-thinking-basics",
+    "the-money-economy",
     "the-path-to-insights-data-models-and-pipelines",
     "the-psychology-of-decision-making",
     "the-science-of-learning-how-learning-works-mqfoa",
+    "thermodynamics-intro",
+    "time-value-of-money-and-tax-strategies",
+    "uncertainty-and-research",
     "understanding-arguments",
     "uva-darden-agile-analytics",
+    "uva-darden-design-thinking-insights-to-inspiration",
+    "uva-darden-designbiz",
     "uva-darden-digital-product-management",
     "uva-darden-market-analytics",
+    "vector-calculus-engineers",
     "wharton-entrepreneurship-opportunity",
     "wharton-marketing",
     "wharton-quantitative-modeling",
+    "what-is-a-proof",
     "wiley-problem-solving-skills-and-critical-thinking",
+    "wiley-sales-negotiation-win-deals-close-with-confidence",
     "working-as-a-scrum-master"
   ]
 }
