@@ -104,7 +104,11 @@ ul.plain li{border-bottom:1px solid var(--rule-soft)}
 .resume .s{font-size:12.5px;color:var(--ink-faint)}
 .resume button{margin-top:10px}
 .transcript{margin-top:20px;border-top:1px solid var(--rule);padding-top:12px;max-height:40vh;overflow-y:auto}
-.transcript p{margin:0 0 9px;color:var(--ink-soft);font-size:14px}
+.transcript p,.transcript button.cue{display:block;width:100%;text-align:left;margin:0 0 4px;padding:4px 6px;
+  color:var(--ink-soft);font:400 14px/1.55 var(--sans);background:none;border:0;border-radius:3px;cursor:default}
+.transcript button.cue{cursor:pointer}
+.transcript button.cue:hover{background:var(--panel)}
+.transcript .cue.on{background:var(--panel);color:var(--ink);box-shadow:inset 2px 0 0 var(--accent)}
 .transcript .t{font:11px var(--mono);color:var(--ink-faint);margin-right:8px}
 .note{color:var(--ink-soft);font-size:13px;margin:10px 0 0}
 .note.warn{color:var(--fail)}
@@ -190,8 +194,17 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
         <button id="markWatched" type="button">Mark watched</button>
         <button id="nextUp" class="go" type="button">Next lecture</button>
         <span class="spacer"></span>
+        <span id="speedWrap" class="hidden" style="display:inline-flex;align-items:center;gap:6px">
+          <label for="speed" style="font-size:12px;color:var(--ink-faint)">Speed</label>
+          <select id="speed" style="width:auto;padding:4px 6px">
+            <option value="0.75">0.75x</option><option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option><option value="1.5">1.5x</option>
+            <option value="1.75">1.75x</option><option value="2">2x</option>
+          </select>
+        </span>
         <a id="openDrive" href="#" target="_blank" rel="noopener" style="font-size:13px">Open in Drive</a>
       </div>
+      <p class="note" id="playerNote"></p>
       <p class="note" id="keysNote"></p>
       <div class="transcript hidden" id="transcript"></div>
     </section>
@@ -205,7 +218,8 @@ const SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 const S = {
   clientId: "", token: "", tokenClient: null, tokenClientFor: null,
   index: [], course: null, files: [], items: [], current: null,
-  progress: {}, lastItem: {}, collapsed: {}, filter: "all", sort: "name"
+  progress: {}, lastItem: {}, collapsed: {}, filter: "all", sort: "name",
+  pos: {}, cues: [], video: null, nativeOk: undefined, rate: 1
 };
 
 const TOKEN_KEY = "cs_token";
@@ -216,11 +230,18 @@ const store = {
 };
 const pretty = s => s.replace(/\.[a-z0-9]+$/i, "").replace(/^\d+[_-]+/, "").replace(/[_-]+/g, " ").trim();
 const titlecase = s => pretty(s).replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
+const clock = sec => {
+  if (!isFinite(sec) || sec < 0) sec = 0;
+  const s = Math.floor(sec % 60), m = Math.floor(sec / 60) % 60, h = Math.floor(sec / 3600);
+  return (h ? h + ":" + String(m).padStart(2, "0") : String(m)) + ":" + String(s).padStart(2, "0");
+};
 const size = n => !n ? "" : n >= 1e9 ? (n / 1e9).toFixed(1) + " GB" : Math.max(1, Math.round(n / 1e6)) + " MB";
 
 S.clientId = store.get("cs_client_id", "");   // a repo config wins over this
 S.progress = store.get("cs_progress", {});
 S.lastItem = store.get("cs_last_item", {});
+S.pos = store.get("cs_pos", {});
+S.rate = store.get("cs_rate", 1);
 S.sort = store.get("cs_sort", "name");
 S.filter = store.get("cs_filter", "all");
 
@@ -533,43 +554,131 @@ function renderResume() {
   box.textContent = "";
   const k = document.createElement("div"); k.className = "k"; k.textContent = "Continue watching";
   const t = document.createElement("div"); t.className = "t"; t.textContent = meta || titlecase(slug);
-  const s = document.createElement("div"); s.className = "s"; s.textContent = titlecase(slug);
-  const btn = document.createElement("button"); btn.className = "go"; btn.type = "button"; btn.textContent = "Resume";
+  const at = S.pos[itemId];
+  const s = document.createElement("div"); s.className = "s";
+  s.textContent = titlecase(slug) + (at ? `  ·  stopped at ${clock(at)}` : "");
+  const btn = document.createElement("button"); btn.className = "go"; btn.type = "button"; btn.textContent = S.pos[itemId] ? `Resume at ${clock(S.pos[itemId])}` : "Resume";
   btn.addEventListener("click", () => openCourse(slug, true));
   box.append(k, t, s, btn);
   box.classList.remove("hidden");
 }
 
 /* ---------- playback ---------- */
-function play(item) {
-  S.current = item;
-  S.lastItem[S.course] = item.id;
-  store.set("cs_last_item", S.lastItem);
-  store.set("cs_last_label", item.label);
-  $("resumeBox").classList.add("hidden");
+// Drive's embedded viewer cannot report a playback position, so try a real
+// video element first and keep the embed as a fallback.
+async function canStreamNatively(id) {
+  if (S.nativeOk !== undefined) return S.nativeOk;
+  if (!S.token) return false;
+  try {
+    const r = await fetch(mediaUrl(id), { headers: { Range: "bytes=0-1" } });
+    S.nativeOk = r.status === 206 || r.status === 200;
+  } catch (e) { S.nativeOk = false; }
+  return S.nativeOk;
+}
+const mediaUrl = id => `https://www.googleapis.com/drive/v3/files/${id}?alt=media&access_token=${encodeURIComponent(S.token)}`;
 
-  const box = $("playerBox");
-  box.textContent = "";
-  box.classList.remove("hidden");
-  $("standby").classList.add("hidden");
+function savePos(id, seconds) {
+  if (!isFinite(seconds) || seconds < 5) return;
+  S.pos[id] = Math.floor(seconds);
+  store.set("cs_pos", S.pos);
+}
+
+function renderNative(item, box) {
+  const v = document.createElement("video");
+  v.controls = true; v.playsInline = true; v.preload = "metadata"; v.autoplay = true;
+  v.style.cssText = "position:absolute;inset:0;width:100%;height:100%;background:#000";
+  v.src = mediaUrl(item.id);
+  v.playbackRate = S.rate;
+  S.video = v;
+
+  const start = S.pos[item.id] || 0;
+  v.addEventListener("loadedmetadata", () => {
+    if (start > 2 && start < v.duration - 5) v.currentTime = start;
+    v.playbackRate = S.rate;
+    $("nowMeta").textContent = metaLine(item, v.duration);
+  });
+
+  let lastSave = 0;
+  v.addEventListener("timeupdate", () => {
+    syncTranscript(v.currentTime);
+    if (v.currentTime - lastSave > 5 || v.currentTime < lastSave) { lastSave = v.currentTime; savePos(item.id, v.currentTime); }
+    if (v.duration && v.currentTime / v.duration > 0.9 && !S.progress[item.id]) {
+      S.progress[item.id] = S.course;
+      store.set("cs_progress", S.progress);
+      renderLectures(); renderCourses(); renderStats();
+      $("markWatched").textContent = "Mark unwatched";
+    }
+  });
+  v.addEventListener("pause", () => savePos(item.id, v.currentTime));
+  v.addEventListener("ended", () => { delete S.pos[item.id]; store.set("cs_pos", S.pos); step(1); });
+  v.addEventListener("error", async () => {
+    // most often the hour-long Google token ran out mid-lecture
+    const at = v.currentTime;
+    savePos(item.id, at);
+    if (store.get("cs_granted", false)) { signIn(true); }
+    $("playerNote").textContent = "Playback stopped, signing in again. Press play once it reloads.";
+  });
+
+  box.append(v);
+  $("speedWrap").classList.remove("hidden");
+  return start;
+}
+
+function renderEmbed(item, box) {
   const frame = document.createElement("iframe");
   frame.src = `https://drive.google.com/file/d/${item.id}/preview`;
   frame.allow = "autoplay; fullscreen";
   frame.allowFullscreen = true;
   box.append(frame);
+  $("speedWrap").classList.add("hidden");
+  return 0;
+}
+
+const metaLine = (item, duration) => {
+  const i = S.items.findIndex(x => x.id === item.id);
+  return [titlecase(S.course), titlecase(item.section), `lecture ${i + 1} of ${S.items.length}`,
+    duration ? clock(duration) : size(Number(item.size) || 0)].join("  ·  ");
+};
+
+async function play(item) {
+  S.current = item;
+  S.video = null;
+  S.lastItem[S.course] = item.id;
+  store.set("cs_last_item", S.lastItem);
+  store.set("cs_last_label", item.label);
+  $("resumeBox").classList.add("hidden");
+  $("playerNote").textContent = "";
+
+  const box = $("playerBox");
+  box.textContent = "";
+  box.classList.remove("hidden");
+  $("standby").classList.add("hidden");
+
+  const native = await canStreamNatively(item.id);
+  const start = native ? renderNative(item, box) : renderEmbed(item, box);
 
   const i = S.items.findIndex(x => x.id === item.id);
   $("nowTitle").textContent = item.label;
-  $("nowMeta").textContent = `${titlecase(S.course)}  ·  ${titlecase(item.section)}  ·  lecture ${i + 1} of ${S.items.length}  ·  ${size(Number(item.size) || 0)}`;
+  $("nowMeta").textContent = metaLine(item, 0);
   $("actions").classList.remove("hidden");
   $("openDrive").href = `https://drive.google.com/file/d/${item.id}/view`;
   $("prevUp").disabled = i <= 0;
   $("nextUp").disabled = i >= S.items.length - 1;
   $("markWatched").textContent = S.progress[item.id] ? "Mark unwatched" : "Mark watched";
-  $("keysNote").innerHTML = 'Keys: <kbd>N</kbd> next, <kbd>P</kbd> previous, <kbd>W</kbd> mark watched, <kbd>/</kbd> search';
+  if (native && start > 2) $("playerNote").textContent = `Resumed at ${clock(start)}.`;
+  else if (!native) $("playerNote").textContent = S.token
+    ? "Google is not allowing direct playback, so this uses the Drive viewer and cannot resume."
+    : "Sign in to resume lectures where you left off.";
+  $("keysNote").innerHTML = 'Keys: <kbd>N</kbd> next, <kbd>P</kbd> previous, <kbd>W</kbd> watched, <kbd>Space</kbd> play, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> 10s, <kbd>/</kbd> search';
   renderLectures();
   loadTranscript(item);
 }
+
+$("speed").addEventListener("change", e => {
+  S.rate = Number(e.target.value) || 1;
+  store.set("cs_rate", S.rate);
+  if (S.video) S.video.playbackRate = S.rate;
+});
 
 function toggleWatched() {
   if (!S.current) return;
@@ -585,6 +694,7 @@ function step(dir) {
   const i = S.items.findIndex(x => x.id === S.current.id);
   const next = S.items[i + dir];
   if (!next) return;
+  if (S.video) savePos(S.current.id, S.video.currentTime);
   if (dir > 0 && !S.progress[S.current.id]) {
     S.progress[S.current.id] = S.course;
     store.set("cs_progress", S.progress);
@@ -603,6 +713,9 @@ document.addEventListener("keydown", e => {
     return;
   }
   if (e.key === "/") { e.preventDefault(); $("q").focus(); }
+  else if (e.key === " " && S.video) { e.preventDefault(); S.video.paused ? S.video.play() : S.video.pause(); }
+  else if (e.key === "ArrowRight" && S.video) { e.preventDefault(); S.video.currentTime += 10; }
+  else if (e.key === "ArrowLeft" && S.video) { e.preventDefault(); S.video.currentTime -= 10; }
   else if (e.key.toLowerCase() === "n") step(1);
   else if (e.key.toLowerCase() === "p") step(-1);
   else if (e.key.toLowerCase() === "w") toggleWatched();
@@ -628,19 +741,27 @@ async function loadTranscript(item) {
   try {
     const r = await driveGet(`files/${item.transcript.id}?alt=media`);
     const cues = parseCues(await r.text());
+    S.cues = cues;
     if (!cues.length) return;
     const h = document.createElement("h2");
     h.textContent = "Transcript";
     box.append(h);
-    for (const c of cues) {
-      const p = document.createElement("p");
+    cues.forEach((c, i) => {
+      const p = document.createElement(S.video ? "button" : "p");
+      p.className = "cue";
+      p.dataset.i = i;
       const t = document.createElement("span");
       t.className = "t";
-      t.textContent = c.time;
+      t.textContent = clock(c.start);
       p.append(t, document.createTextNode(c.text));
+      if (S.video) {
+        p.type = "button";
+        p.addEventListener("click", () => { S.video.currentTime = c.start; S.video.play(); });
+      }
       box.append(p);
-    }
+    });
     box.classList.remove("hidden");
+    if (S.video) syncTranscript(S.video.currentTime);
   } catch (e) {
     box.textContent = e.message;
     box.classList.remove("hidden");
@@ -656,10 +777,40 @@ function parseCues(raw) {
     if (!timeLine) continue;
     const body = lines.slice(lines.indexOf(timeLine) + 1).join(" ").trim();
     if (!body) continue;
-    out.push({ time: timeLine.split("-->")[0].trim().replace(/[.,]\d+$/, "").replace(/^00:/, ""), text: body });
+    out.push({ start: seconds(timeLine.split("-->")[0]), text: body });
   }
   return out;
 }
+
+function seconds(stamp) {
+  const m = stamp.trim().match(/(?:(\d+):)?(\d+):(\d+)[.,](\d+)/);
+  if (!m) return 0;
+  return (Number(m[1] || 0) * 3600) + (Number(m[2]) * 60) + Number(m[3]) + Number("0." + m[4]);
+}
+
+// follow the video without fighting a manual scroll
+let lastCue = -1, lastScroll = 0;
+function syncTranscript(t) {
+  if (!S.cues.length) return;
+  let i = -1;
+  for (let k = 0; k < S.cues.length; k++) { if (S.cues[k].start <= t + 0.2) i = k; else break; }
+  if (i === lastCue) return;
+  lastCue = i;
+  const box = $("transcript");
+  for (const el of box.querySelectorAll(".cue.on")) el.classList.remove("on");
+  const el = box.querySelector('.cue[data-i="' + i + '"]');
+  if (!el) return;
+  el.classList.add("on");
+  if (Date.now() - lastScroll > 4000) {
+    box.scrollTo({ top: el.offsetTop - box.offsetTop - box.clientHeight / 2, behavior: "smooth" });
+  }
+}
+$("transcript").addEventListener("scroll", () => { lastScroll = Date.now(); }, { passive: true });
+
+addEventListener("pagehide", () => { if (S.video && S.current) savePos(S.current.id, S.video.currentTime); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && S.video && S.current) savePos(S.current.id, S.video.currentTime);
+});
 
 /* ---------- boot ---------- */
 // config.json carries the Google client ID for every browser, so the setup box is only a fallback
