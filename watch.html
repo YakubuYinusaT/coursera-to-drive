@@ -359,6 +359,13 @@ function sendTokenToWorker() {
   try { navigator.serviceWorker?.controller?.postMessage({ type: "token", token: S.token }); } catch (e) {}
 }
 
+// the worker is restarted by the browser at will and loses the token each time
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", e => {
+    if (e.data?.type === "need-token") sendTokenToWorker();
+  });
+}
+
 function loadKeptToken() {
   const kept = store.get(TOKEN_KEY, null);
   if (kept?.token && kept.exp > Date.now()) { S.token = kept.token; return true; }
@@ -381,7 +388,7 @@ const driveGet = async path => {
   const r = await fetch("https://www.googleapis.com/drive/v3/" + path, { headers: { Authorization: "Bearer " + S.token } });
   if (r.status === 401) {
     store.del(TOKEN_KEY); S.token = ""; markSignedIn(false);
-    buildTokenClient()?.requestAccessToken({ prompt: "" });
+    maybeSignIn();
     throw new Error("Signing you in again, one moment.");
   }
   if (!r.ok) throw new Error("Drive returned " + r.status);
@@ -682,20 +689,29 @@ function renderNative(item, box) {
   });
   v.addEventListener("pause", () => savePos(item.id, v.currentTime));
   v.addEventListener("ended", () => { delete S.pos[item.id]; store.set("cs_pos", S.pos); step(1); });
-  v.addEventListener("error", async () => {
-    // most often the hour-long Google token ran out mid-lecture
+  let retried = false;
+  v.addEventListener("error", () => {
     const at = v.currentTime || S.pos[item.id] || 0;
     savePos(item.id, at);
+    if (retried) {
+      // stop rather than bounce between sign-in and playback
+      $("playerNote").textContent = "Drive would not stream this lecture. Falling back to the Drive viewer.";
+      S.nativeOk = false;
+      const box = $("playerBox");
+      box.textContent = "";
+      renderEmbed(item, box);
+      return;
+    }
+    retried = true;
     $("playerNote").textContent = "Reconnecting to Drive...";
-    if (store.get("cs_granted", false)) signIn(true);
+    maybeSignIn();
     setTimeout(() => {
       if (S.current?.id !== item.id) return;
       sendTokenToWorker();
       v.src = mediaUrl(item.id);
       v.load();
       v.addEventListener("loadedmetadata", () => { v.currentTime = at; v.play().catch(() => {}); }, { once: true });
-      $("playerNote").textContent = `Reconnected, resumed at ${clock(at)}.`;
-    }, 2500);
+    }, 2000);
   });
 
   box.append(v);
@@ -733,6 +749,7 @@ async function play(item) {
   box.classList.remove("hidden");
   $("standby").classList.add("hidden");
 
+  sendTokenToWorker();
   const native = await canStreamNatively(item.id);
   const start = native ? renderNative(item, box) : renderEmbed(item, box);
 
@@ -924,10 +941,19 @@ async function boot() {
   showApp();
   startWorker();
   // renew quietly in the background; Google only interrupts if the grant is gone
-  if (!signedIn && store.get("cs_granted", false)) setTimeout(() => signIn(true), 600);
+  if (!signedIn) setTimeout(maybeSignIn, 600);
+}
+
+let lastSignIn = 0;
+function maybeSignIn() {
+  if (!store.get("cs_granted", false)) return;
+  if (Date.now() - lastSignIn < 60000) return;   // never more than once a minute
+  lastSignIn = Date.now();
+  signIn(true);
 }
 
 function signIn(quiet) {
+  lastSignIn = Date.now();
   const client = buildTokenClient();
   if (!client) { setTimeout(() => signIn(quiet), 400); return; }
   $("setupErr").classList.add("hidden");
