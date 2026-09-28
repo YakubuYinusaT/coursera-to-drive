@@ -1,5 +1,5 @@
 {
-  "indexed": "2026-09-28T21:05:50Z",
+  "indexed": "2026-09-28T22:22:56Z",
   "courses": [
     {
       "slug": "10k-women-10",
@@ -1281,13 +1281,6 @@
       "videos": 71,
       "bytes": 2470241263,
       "sections": 6
-    },
-    {
-      "slug": "logic-and-reasoning-for-computing",
-      "files": 127,
-      "videos": 34,
-      "bytes": 330077787,
-      "sections": 5
     },
     {
       "slug": "logic-for-economists",
