@@ -115,6 +115,22 @@ ul.plain li{border-bottom:1px solid var(--rule-soft)}
 .empty{color:var(--ink-faint);font-size:14px;padding:26px 6px;text-align:center}
 .standby{width:100%;aspect-ratio:16/9;border:1px dashed var(--rule);border-radius:4px;display:grid;place-items:center;
   text-align:center;color:var(--ink-faint);font-size:14px;padding:20px}
+.tabs{display:none}
+@media (max-width:820px){
+  .tabs{display:flex;position:sticky;top:53px;z-index:4;background:var(--panel);border-bottom:1px solid var(--rule);padding:0 8px}
+  .tabs button{flex:1 1 0;border:0;border-radius:0;background:none;padding:11px 6px;font-size:13.5px;color:var(--ink-faint);
+    border-bottom:2px solid transparent}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+  .grid > .pane{display:none}
+  body[data-view="courses"] .courses-pane,
+  body[data-view="lectures"] .lectures-pane,
+  body[data-view="player"] .player-pane{display:block}
+  .scroll{max-height:none}
+  .row-btn,.lec{padding-top:12px;padding-bottom:12px}
+  main{padding-top:12px}
+  .player-pane .player,.player-pane .standby{position:sticky;top:96px}
+  .transcript{max-height:none}
+}
 .hidden{display:none!important}
 kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:0 4px;color:var(--ink-faint)}
 </style>
@@ -131,6 +147,11 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
   </div>
 </header>
 
+<nav class="tabs" id="tabs" aria-label="Sections">
+  <button data-v="courses" class="on" type="button">Courses</button>
+  <button data-v="lectures" type="button">Lectures</button>
+  <button data-v="player" type="button">Playing</button>
+</nav>
 <main>
   <div class="setup" id="setup">
     <h2>Connect your Google account once</h2>
@@ -153,7 +174,7 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
   </div>
 
   <div class="grid hidden" id="app">
-    <section class="pane">
+    <section class="pane courses-pane">
       <h2>Courses</h2>
       <p class="stats" id="libStats"></p>
       <div class="tools">
@@ -175,7 +196,7 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
       <p class="note" id="coursesNote"></p>
     </section>
 
-    <section class="pane">
+    <section class="pane lectures-pane">
       <h2 id="lecturesHead">Lectures</h2>
       <div class="tools"><span class="grow"><input id="lq" type="text" placeholder="Filter lectures" aria-label="Filter lectures"></span></div>
       <div class="scroll"><ul class="plain" id="lectures"></ul></div>
@@ -367,6 +388,19 @@ const driveGet = async path => {
   return r;
 };
 
+/* ---------- small screens move between panes instead of stacking them ---------- */
+const narrow = () => matchMedia("(max-width:820px)").matches;
+function showView(v) {
+  document.body.dataset.view = v;
+  for (const b of $("tabs").children) b.classList.toggle("on", b.dataset.v === v);
+  if (narrow()) scrollTo({ top: 0, behavior: "smooth" });
+}
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (b) showView(b.dataset.v);
+});
+document.body.dataset.view = "courses";
+
 /* ---------- library ---------- */
 async function loadIndex() {
   try {
@@ -464,7 +498,7 @@ function renderCourses() {
       bar.append(fill);
       b.append(bar);
     }
-    b.addEventListener("click", () => openCourse(c.slug, false));
+    b.addEventListener("click", () => { openCourse(c.slug, false); if (narrow()) showView("lectures"); });
     li.append(b);
     ul.append(li);
   }
@@ -562,7 +596,7 @@ function renderLectures() {
     meta.className = "meta";
     meta.textContent = size(Number(it.size) || 0);
     b.append(tick, nm, meta);
-    b.addEventListener("click", () => play(it));
+    b.addEventListener("click", () => { play(it); if (narrow()) showView("player"); });
     li.append(b);
     ul.append(li);
   }
@@ -583,7 +617,7 @@ function renderResume() {
   const s = document.createElement("div"); s.className = "s";
   s.textContent = titlecase(slug) + (at ? `  ·  stopped at ${clock(at)}` : "");
   const btn = document.createElement("button"); btn.className = "go"; btn.type = "button"; btn.textContent = S.pos[itemId] ? `Resume at ${clock(S.pos[itemId])}` : "Resume";
-  btn.addEventListener("click", () => openCourse(slug, true));
+  btn.addEventListener("click", () => { openCourse(slug, true); if (narrow()) showView("player"); });
   box.append(k, t, s, btn);
   box.classList.remove("hidden");
 }
