@@ -1,6 +1,6 @@
 name: Coursera to Google Drive
 
-run-name: "${{ inputs.action == 'list-courses' && 'List courses' || format('Download {0}', inputs.courses) }}"
+run-name: "${{ inputs.action == 'list-courses' && 'List courses' || inputs.action == 'sync-drive' && 'Sync from Drive' || format('Download {0}', inputs.courses) }}"
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
       action:
         description: "What to do"
         type: choice
-        options: [download, list-courses]
+        options: [download, list-courses, sync-drive]
         default: download
       courses:
         description: "Course slugs, separated by spaces (from list-courses)"
@@ -150,3 +150,45 @@ jobs:
           [ -d dl ] || { echo "Nothing downloaded"; exit 0; }
           du -sh dl
           rclone copy dl "gdrive:$FOLDER" --ignore-existing --transfers 4 --stats 30s --stats-one-line -v
+
+  # Reads Google Drive itself, so the page shows what is really there
+  manifest:
+    needs: download
+    if: always() && (inputs.action == 'download' || inputs.action == 'sync-drive')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install rclone
+        run: curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      - name: List the courses in Drive
+        env:
+          FOLDER: ${{ inputs.drive_folder }}
+        run: |
+          folder="${FOLDER:-Coursera}"
+          rclone lsf "gdrive:$folder" --dirs-only --max-depth 1 | sed 's:/$::' | sort -u > names.txt
+          count=$(wc -l < names.txt)
+          echo "Drive holds $count course folders"
+          if [ "$count" -eq 0 ]; then
+            echo "::error::Drive returned no folders. Leaving the saved list untouched."
+            exit 1
+          fi
+          jq -R . names.txt | jq -s --arg folder "$folder" --arg when "$(date -u +%Y-%m-%dT%H:%M:%SZ)"             '{synced: $when, folder: $folder, courses: .}' > downloaded.json
+          rm names.txt
+
+      - name: Save it for the web page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add downloaded.json
+          git diff --staged --quiet && { echo "No change"; exit 0; }
+          git commit -m "Update the list of courses in Drive"
+          for i in 1 2 3; do
+            git pull --rebase --quiet && git push && exit 0
+            sleep 5
+          done
+          echo "::error::Could not push the updated list"
+          exit 1
