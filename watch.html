@@ -101,8 +101,10 @@ ul.plain li{border-bottom:1px solid var(--rule-soft)}
     </ol>
     <div class="row">
       <input id="clientId" type="text" spellcheck="false" placeholder="1234567890-abc123.apps.googleusercontent.com">
-      <button class="go" id="saveClient" type="button">Save and sign in</button>
+      <button class="go" id="saveClient" type="button">Sign in with Google</button>
+      <button id="clearClient" class="small hidden" type="button">Use a different client ID</button>
     </div>
+    <p class="note" id="setupStatus"></p>
     <p class="note warn hidden" id="setupErr"></p>
   </div>
 
@@ -153,40 +155,77 @@ S.clientId = store.get("cs_client_id", "");
 S.progress = store.get("cs_progress", {});
 
 /* ---------- Google sign-in ---------- */
-function initAuth(interactive) {
-  if (!window.google?.accounts?.oauth2) { setTimeout(() => initAuth(interactive), 300); return; }
+// The popup only opens from a real click, so requestAccessToken runs inside the handler.
+function buildTokenClient() {
+  if (!window.google?.accounts?.oauth2) return null;
+  if (S.tokenClient && S.tokenClientFor === S.clientId) return S.tokenClient;
+  S.tokenClientFor = S.clientId;
   S.tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: S.clientId,
     scope: SCOPE,
+    prompt: "",
     callback: res => {
-      if (res.error) { showSetupError("Google refused the sign-in: " + res.error); return; }
+      if (res.error) return showSetupError(explain(res.error));
       S.token = res.access_token;
+      store.set("cs_granted", true);
+      $("setupStatus").textContent = "";
       $("setup").classList.add("hidden");
       $("app").classList.remove("hidden");
       $("signout").classList.remove("hidden");
       loadIndex();
-    }
+    },
+    error_callback: err => showSetupError(explain(err?.type || err?.message || "unknown"))
   });
-  if (interactive) S.tokenClient.requestAccessToken({ prompt: "" });
+  return S.tokenClient;
+}
+
+function explain(code) {
+  const c = String(code);
+  if (c.includes("popup_closed")) return "The Google window closed before sign-in finished. Click Sign in with Google again.";
+  if (c.includes("popup_failed") || c.includes("popup_blocked")) return "Your browser blocked the Google window. Allow popups for this site, then try again.";
+  if (c.includes("access_denied")) return "Google blocked the account. In the Cloud console, under OAuth consent screen, add your own Gmail address under Test users.";
+  if (c.includes("invalid_client") || c.includes("idpiframe") || c.includes("origin"))
+    return "Google rejected the client ID for this address. In the Cloud console, open your OAuth client and add exactly https://yakubuyinusat.github.io under Authorized JavaScript origins, then wait a minute and retry.";
+  return "Google refused the sign-in: " + c;
 }
 
 function showSetupError(msg) {
+  $("setupStatus").textContent = "";
   $("setupErr").textContent = msg;
   $("setupErr").classList.remove("hidden");
 }
 
 $("saveClient").addEventListener("click", () => {
   const id = $("clientId").value.trim();
-  if (!id.endsWith(".apps.googleusercontent.com")) return showSetupError("That does not look like a client ID. It ends in .apps.googleusercontent.com");
+  $("setupErr").classList.add("hidden");
+  if (!id.endsWith(".apps.googleusercontent.com"))
+    return showSetupError("That does not look like a client ID. It ends in .apps.googleusercontent.com");
   S.clientId = id;
   store.set("cs_client_id", id);
+
+  const client = buildTokenClient();
+  if (!client) return showSetupError("Google's sign-in script has not loaded yet. Wait a moment and click again, and check that no extension is blocking accounts.google.com.");
+  $("setupStatus").textContent = "Opening the Google window...";
+  try {
+    client.requestAccessToken({ prompt: store.get("cs_granted", false) ? "" : "consent" });
+  } catch (e) {
+    showSetupError(explain(e.message || "unknown"));
+  }
+});
+
+$("clearClient").addEventListener("click", () => {
+  store.del("cs_client_id"); store.del("cs_granted");
+  S.clientId = ""; S.tokenClient = null; S.tokenClientFor = null;
+  $("clientId").value = "";
   $("setupErr").classList.add("hidden");
-  initAuth(true);
+  $("setupStatus").textContent = "Client ID cleared. Paste a new one.";
+  $("clearClient").classList.add("hidden");
 });
 
 $("signout").addEventListener("click", () => {
   if (S.token) google.accounts.oauth2.revoke(S.token, () => {});
   S.token = "";
+  store.del("cs_granted");
   $("app").classList.add("hidden");
   $("signout").classList.add("hidden");
   $("setup").classList.remove("hidden");
@@ -409,7 +448,8 @@ function parseCues(raw) {
 /* ---------- boot ---------- */
 if (S.clientId) {
   $("clientId").value = S.clientId;
-  initAuth(true);
+  $("clearClient").classList.remove("hidden");
+  $("setupStatus").textContent = "Client ID saved. Click Sign in with Google.";
 }
 </script>
 </body>
