@@ -1,6 +1,6 @@
 name: Coursera to Google Drive
 
-run-name: "${{ inputs.action == 'list-courses' && 'List courses' || inputs.action == 'sync-drive' && 'Sync from Drive' || format('Download {0}', inputs.courses) }}"
+run-name: "${{ inputs.action == 'list-courses' && 'List courses' || inputs.action == 'sync-drive' && 'Sync from Drive' || inputs.action == 'index-library' && 'Index the library' || format('Download {0}', inputs.courses) }}"
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
       action:
         description: "What to do"
         type: choice
-        options: [download, list-courses, sync-drive]
+        options: [download, list-courses, sync-drive, index-library]
         default: download
       courses:
         description: "Course slugs, separated by spaces (from list-courses)"
@@ -191,4 +191,55 @@ jobs:
             sleep 5
           done
           echo "::error::Could not push the updated list"
+          exit 1
+
+  # Builds the file index the watch page reads: one JSON per course
+  library:
+    if: inputs.action == 'index-library'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install rclone
+        run: curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      - name: Index every course folder
+        env:
+          FOLDER: ${{ inputs.drive_folder }}
+        run: |
+          folder="${FOLDER:-Coursera}"
+          rm -rf library && mkdir -p library
+          rclone lsf "gdrive:$folder" --dirs-only --max-depth 1 | sed 's:/$::' | sort -u > courses.txt
+          echo "Indexing $(wc -l < courses.txt) courses"
+          : > index.tmp
+          while read -r course; do
+            [ -z "$course" ] && continue
+            if ! rclone lsjson "gdrive:$folder/$course" -R --files-only --no-modtime > raw.json; then
+              echo "skipped $course"
+              continue
+            fi
+            jq -c '[ .[] | {path: .Path, name: .Name, size: .Size, mime: .MimeType, id: .ID} ]' raw.json > "library/$course.json"
+            n=$(jq length "library/$course.json")
+            v=$(jq '[.[] | select(.mime // "" | startswith("video/"))] | length' "library/$course.json")
+            jq -cn --arg slug "$course" --argjson files "$n" --argjson videos "$v" '{slug: $slug, files: $files, videos: $videos}' >> index.tmp
+            echo "  $course: $n files, $v videos"
+          done < courses.txt
+          jq -s --arg when "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{indexed: $when, courses: .}' index.tmp > library/index.json
+          rm -f index.tmp courses.txt raw.json
+          echo "Indexed $(jq '.courses | length' library/index.json) courses"
+
+      - name: Save the index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A library
+          git diff --staged --quiet && { echo "No change"; exit 0; }
+          git commit -m "Update the course library index"
+          for i in 1 2 3; do
+            git pull --rebase --quiet && git push && exit 0
+            sleep 5
+          done
           exit 1
