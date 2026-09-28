@@ -1,5 +1,5 @@
 {
-  "indexed": "2026-09-28T16:43:55Z",
+  "indexed": "2026-09-28T21:05:50Z",
   "courses": [
     {
       "slug": "10k-women-10",
@@ -1255,10 +1255,59 @@
       "sections": 8
     },
     {
+      "slug": "learning-how-to-learn",
+      "files": 351,
+      "videos": 57,
+      "bytes": 2991862023,
+      "sections": 5
+    },
+    {
+      "slug": "legal-environment-of-business",
+      "files": 3,
+      "videos": 1,
+      "bytes": 8270509,
+      "sections": 1
+    },
+    {
+      "slug": "legal-foundations-for-entrepreneurs",
+      "files": 89,
+      "videos": 21,
+      "bytes": 547650414,
+      "sections": 8
+    },
+    {
       "slug": "life-with-adhd",
       "files": 227,
       "videos": 71,
       "bytes": 2470241263,
+      "sections": 6
+    },
+    {
+      "slug": "logic-and-reasoning-for-computing",
+      "files": 127,
+      "videos": 34,
+      "bytes": 330077787,
+      "sections": 5
+    },
+    {
+      "slug": "logic-for-economists",
+      "files": 34,
+      "videos": 11,
+      "bytes": 183063645,
+      "sections": 5
+    },
+    {
+      "slug": "logic-introduction",
+      "files": 247,
+      "videos": 4,
+      "bytes": 105922923,
+      "sections": 6
+    },
+    {
+      "slug": "logical-reasoning-for-entrance-exam-job-placements",
+      "files": 182,
+      "videos": 56,
+      "bytes": 2083121813,
       "sections": 6
     },
     {
@@ -1267,6 +1316,20 @@
       "videos": 44,
       "bytes": 1074246196,
       "sections": 6
+    },
+    {
+      "slug": "making-money-freelancing",
+      "files": 107,
+      "videos": 30,
+      "bytes": 252069671,
+      "sections": 6
+    },
+    {
+      "slug": "market-equilibrium-government-policies-and-elasticity",
+      "files": 77,
+      "videos": 24,
+      "bytes": 455177905,
+      "sections": 3
     },
     {
       "slug": "market-research",
@@ -1297,11 +1360,116 @@
       "sections": 3
     },
     {
+      "slug": "master-decision-theory--frameworks",
+      "files": 29,
+      "videos": 6,
+      "bytes": 202877698,
+      "sections": 4
+    },
+    {
+      "slug": "master-private-equity-basics-analyze-structure-apply",
+      "files": 93,
+      "videos": 31,
+      "bytes": 649057328,
+      "sections": 4
+    },
+    {
+      "slug": "mastering-financial-compliance-and-anti-money-laundering",
+      "files": 143,
+      "videos": 42,
+      "bytes": 1154140981,
+      "sections": 4
+    },
+    {
+      "slug": "math-click",
+      "files": 137,
+      "videos": 29,
+      "bytes": 2211396397,
+      "sections": 4
+    },
+    {
+      "slug": "mathematical-foundations-for-computing",
+      "files": 138,
+      "videos": 32,
+      "bytes": 606244475,
+      "sections": 5
+    },
+    {
+      "slug": "mathematical-proofs",
+      "files": 229,
+      "videos": 56,
+      "bytes": 2114044709,
+      "sections": 15
+    },
+    {
+      "slug": "mathematical-thinking",
+      "files": 161,
+      "videos": 42,
+      "bytes": 2301829084,
+      "sections": 10
+    },
+    {
+      "slug": "mathematical-thinking-for-advanced-mathematics",
+      "files": 142,
+      "videos": 46,
+      "bytes": 6339539982,
+      "sections": 8
+    },
+    {
+      "slug": "mathematics-sport",
+      "files": 471,
+      "videos": 91,
+      "bytes": 1472051974,
+      "sections": 12
+    },
+    {
+      "slug": "matrix-algebra-determinants-and-eigenvectors",
+      "files": 75,
+      "videos": 12,
+      "bytes": 279760648,
+      "sections": 6
+    },
+    {
+      "slug": "matrix-algebra-engineers",
+      "files": 197,
+      "videos": 43,
+      "bytes": 953437332,
+      "sections": 4
+    },
+    {
+      "slug": "mechanics-particles-planets",
+      "files": 147,
+      "videos": 38,
+      "bytes": 544884732,
+      "sections": 8
+    },
+    {
+      "slug": "microeconomics",
+      "files": 82,
+      "videos": 24,
+      "bytes": 553537248,
+      "sections": 4
+    },
+    {
+      "slug": "microeconomics-part1",
+      "files": 261,
+      "videos": 85,
+      "bytes": 558902023,
+      "sections": 5
+    },
+    {
       "slug": "mindshift",
       "files": 177,
       "videos": 54,
       "bytes": 2110309793,
       "sections": 5
+    },
+    {
+      "slug": "model-thinking",
+      "files": 461,
+      "videos": 108,
+      "bytes": 1881870774,
+      "sections": 12
     },
     {
       "slug": "modern-world",
@@ -1318,11 +1486,39 @@
       "sections": 7
     },
     {
+      "slug": "monetary-measures-economic-output-and-corporate-profits",
+      "files": 16,
+      "videos": 4,
+      "bytes": 224705076,
+      "sections": 1
+    },
+    {
       "slug": "money-banking",
       "files": 637,
       "videos": 200,
       "bytes": 4505591223,
       "sections": 12
+    },
+    {
+      "slug": "multivariate-calculus-machine-learning",
+      "files": 135,
+      "videos": 42,
+      "bytes": 553929199,
+      "sections": 7
+    },
+    {
+      "slug": "music-theory-essentials-of-music-theory-for-modern-music",
+      "files": 47,
+      "videos": 15,
+      "bytes": 436149197,
+      "sections": 5
+    },
+    {
+      "slug": "nature-of-genius",
+      "files": 147,
+      "videos": 43,
+      "bytes": 1776391770,
+      "sections": 4
     },
     {
       "slug": "negotiation",
@@ -1332,11 +1528,25 @@
       "sections": 9
     },
     {
+      "slug": "negotiation-and-deal-closure",
+      "files": 50,
+      "videos": 12,
+      "bytes": 333059694,
+      "sections": 9
+    },
+    {
       "slug": "negotiation-skills",
       "files": 207,
       "videos": 43,
       "bytes": 1151356524,
       "sections": 8
+    },
+    {
+      "slug": "negotiation-skills-and-effective-communication",
+      "files": 77,
+      "videos": 8,
+      "bytes": 193569779,
+      "sections": 4
     },
     {
       "slug": "neuromarketing",
@@ -1360,6 +1570,41 @@
       "sections": 6
     },
     {
+      "slug": "number-theory-cryptography",
+      "files": 56,
+      "videos": 7,
+      "bytes": 255729138,
+      "sections": 4
+    },
+    {
+      "slug": "numerical-methods-engineers",
+      "files": 314,
+      "videos": 82,
+      "bytes": 1491676366,
+      "sections": 6
+    },
+    {
+      "slug": "odc-graphs-and-networks",
+      "files": 329,
+      "videos": 102,
+      "bytes": 4792315958,
+      "sections": 10
+    },
+    {
+      "slug": "openai-custom-gpts",
+      "files": 108,
+      "videos": 31,
+      "bytes": 836230460,
+      "sections": 3
+    },
+    {
+      "slug": "ordinary-differential-equations",
+      "files": 190,
+      "videos": 63,
+      "bytes": 1354409120,
+      "sections": 9
+    },
+    {
       "slug": "packt-agile-product-owner-level-1-certification-mock-exams-7kzyy",
       "files": 369,
       "videos": 122,
@@ -1367,11 +1612,39 @@
       "sections": 14
     },
     {
+      "slug": "packt-design-thinking-for-business-innovation-strategies",
+      "files": 130,
+      "videos": 7,
+      "bytes": 57463728,
+      "sections": 7
+    },
+    {
+      "slug": "packt-ensemble-machine-learning-in-python-random-forest-flm8r",
+      "files": 94,
+      "videos": 31,
+      "bytes": 554095764,
+      "sections": 7
+    },
+    {
+      "slug": "packt-mathematics-behind-backpropagation-theory-and-python-code-ic0i5",
+      "files": 118,
+      "videos": 39,
+      "bytes": 767009287,
+      "sections": 4
+    },
+    {
       "slug": "persuade-speech",
       "files": 191,
       "videos": 54,
       "bytes": 653849089,
       "sections": 7
+    },
+    {
+      "slug": "polynomials-roots",
+      "files": 40,
+      "videos": 7,
+      "bytes": 141281655,
+      "sections": 4
     },
     {
       "slug": "practice-exam-for-aipmm-certified-product-manager-cpm",
@@ -1388,11 +1661,67 @@
       "sections": 2
     },
     {
+      "slug": "precalculus-periodic-functions",
+      "files": 36,
+      "videos": 10,
+      "bytes": 275529289,
+      "sections": 5
+    },
+    {
+      "slug": "precalculus-relations-functions",
+      "files": 44,
+      "videos": 12,
+      "bytes": 240555628,
+      "sections": 4
+    },
+    {
+      "slug": "principles-of-economics-intro",
+      "files": 183,
+      "videos": 60,
+      "bytes": 874588317,
+      "sections": 6
+    },
+    {
+      "slug": "principles-of-economics-macroeconomics",
+      "files": 217,
+      "videos": 71,
+      "bytes": 1303707385,
+      "sections": 8
+    },
+    {
+      "slug": "principles-of-economics-microeconomics",
+      "files": 108,
+      "videos": 35,
+      "bytes": 634615981,
+      "sections": 5
+    },
+    {
       "slug": "principles-of-management",
       "files": 328,
       "videos": 94,
       "bytes": 1106382413,
       "sections": 4
+    },
+    {
+      "slug": "probability-statistical-inference-and-regression-analysis",
+      "files": 207,
+      "videos": 62,
+      "bytes": 1548041067,
+      "sections": 6
+    },
+    {
+      "slug": "probability-statistics-decision-making",
+      "files": 45,
+      "videos": 15,
+      "bytes": 425597343,
+      "sections": 3
+    },
+    {
+      "slug": "probability-theory-and-regression-for-predictive-analytics",
+      "files": 74,
+      "videos": 23,
+      "bytes": 587572889,
+      "sections": 3
     },
     {
       "slug": "problem-solving",
@@ -1406,6 +1735,13 @@
       "files": 97,
       "videos": 27,
       "bytes": 868593261,
+      "sections": 4
+    },
+    {
+      "slug": "procurement-negotiation",
+      "files": 36,
+      "videos": 5,
+      "bytes": 68749361,
       "sections": 4
     },
     {
@@ -1486,6 +1822,20 @@
       "sections": 6
     },
     {
+      "slug": "protecting-against-money-laundering-terrorist-financing-us",
+      "files": 2,
+      "videos": 0,
+      "bytes": 7871,
+      "sections": 2
+    },
+    {
+      "slug": "psychology-of-negotiation",
+      "files": 187,
+      "videos": 49,
+      "bytes": 3525498869,
+      "sections": 5
+    },
+    {
       "slug": "public-speaking",
       "files": 203,
       "videos": 59,
@@ -1493,11 +1843,53 @@
       "sections": 6
     },
     {
+      "slug": "python-crash-course",
+      "files": 302,
+      "videos": 81,
+      "bytes": 644788718,
+      "sections": 7
+    },
+    {
       "slug": "python-for-applied-data-science-ai",
       "files": 93,
       "videos": 26,
       "bytes": 330187877,
       "sections": 6
+    },
+    {
+      "slug": "python-for-data-visualization",
+      "files": 85,
+      "videos": 22,
+      "bytes": 112363001,
+      "sections": 5
+    },
+    {
+      "slug": "python-project-for-data-science",
+      "files": 15,
+      "videos": 2,
+      "bytes": 13065648,
+      "sections": 1
+    },
+    {
+      "slug": "question-reality-mind",
+      "files": 95,
+      "videos": 21,
+      "bytes": 459990604,
+      "sections": 3
+    },
+    {
+      "slug": "random-processes",
+      "files": 76,
+      "videos": 19,
+      "bytes": 325841893,
+      "sections": 4
+    },
+    {
+      "slug": "refresh-college-algebra-foundations",
+      "files": 13,
+      "videos": 2,
+      "bytes": 43034997,
+      "sections": 3
     },
     {
       "slug": "reproducible-research",
@@ -1514,6 +1906,13 @@
       "sections": 5
     },
     {
+      "slug": "risk-management-financial-theory",
+      "files": 40,
+      "videos": 5,
+      "bytes": 271693381,
+      "sections": 3
+    },
+    {
       "slug": "scope-time-management-cost",
       "files": 184,
       "videos": 46,
@@ -1528,11 +1927,53 @@
       "sections": 6
     },
     {
+      "slug": "series-trig-and-prob",
+      "files": 71,
+      "videos": 17,
+      "bytes": 395324263,
+      "sections": 4
+    },
+    {
+      "slug": "set-permissions-right",
+      "files": 15,
+      "videos": 3,
+      "bytes": 143840074,
+      "sections": 2
+    },
+    {
+      "slug": "shifting-your-mindset-for-financial-agility",
+      "files": 48,
+      "videos": 14,
+      "bytes": 258269291,
+      "sections": 5
+    },
+    {
+      "slug": "simulate-with-monte-carlo",
+      "files": 34,
+      "videos": 6,
+      "bytes": 338099694,
+      "sections": 4
+    },
+    {
+      "slug": "single-variable-calculus",
+      "files": 43,
+      "videos": 13,
+      "bytes": 260481711,
+      "sections": 4
+    },
+    {
       "slug": "six-sigma-principles2",
       "files": 138,
       "videos": 36,
       "bytes": 522239850,
       "sections": 4
+    },
+    {
+      "slug": "social-economic-networks",
+      "files": 315,
+      "videos": 81,
+      "bytes": 1598941379,
+      "sections": 8
     },
     {
       "slug": "social-media-management",
@@ -1570,11 +2011,32 @@
       "sections": 6
     },
     {
+      "slug": "sql-data-science-capstone",
+      "files": 142,
+      "videos": 36,
+      "bytes": 347936773,
+      "sections": 4
+    },
+    {
+      "slug": "stanford-statistics",
+      "files": 252,
+      "videos": 82,
+      "bytes": 372548579,
+      "sections": 12
+    },
+    {
       "slug": "startup-entrepreneurship-from-idea-to-startup",
       "files": 73,
       "videos": 20,
       "bytes": 1248524062,
       "sections": 6
+    },
+    {
+      "slug": "startup-financing-without-vc",
+      "files": 215,
+      "videos": 64,
+      "bytes": 1277837226,
+      "sections": 8
     },
     {
       "slug": "startup-funding",
@@ -1605,6 +2067,20 @@
       "sections": 6
     },
     {
+      "slug": "strategicthinking",
+      "files": 22,
+      "videos": 0,
+      "bytes": 48046882,
+      "sections": 6
+    },
+    {
+      "slug": "strategy-and-game-theory-for-management",
+      "files": 245,
+      "videos": 56,
+      "bytes": 2355217727,
+      "sections": 5
+    },
+    {
       "slug": "supervised-learning-and-its-applications-in-marketing",
       "files": 142,
       "videos": 34,
@@ -1617,6 +2093,20 @@
       "videos": 74,
       "bytes": 4561129453,
       "sections": 6
+    },
+    {
+      "slug": "systems-thinking-basics",
+      "files": 46,
+      "videos": 14,
+      "bytes": 563623237,
+      "sections": 1
+    },
+    {
+      "slug": "the-money-economy",
+      "files": 3,
+      "videos": 1,
+      "bytes": 14534866,
+      "sections": 1
     },
     {
       "slug": "the-path-to-insights-data-models-and-pipelines",
@@ -1640,6 +2130,27 @@
       "sections": 6
     },
     {
+      "slug": "thermodynamics-intro",
+      "files": 154,
+      "videos": 47,
+      "bytes": 1163477579,
+      "sections": 9
+    },
+    {
+      "slug": "time-value-of-money-and-tax-strategies",
+      "files": 3,
+      "videos": 1,
+      "bytes": 19399388,
+      "sections": 1
+    },
+    {
+      "slug": "uncertainty-and-research",
+      "files": 153,
+      "videos": 27,
+      "bytes": 451109198,
+      "sections": 5
+    },
+    {
       "slug": "understanding-arguments",
       "files": 104,
       "videos": 32,
@@ -1654,6 +2165,20 @@
       "sections": 5
     },
     {
+      "slug": "uva-darden-design-thinking-insights-to-inspiration",
+      "files": 175,
+      "videos": 46,
+      "bytes": 639617468,
+      "sections": 6
+    },
+    {
+      "slug": "uva-darden-designbiz",
+      "files": 79,
+      "videos": 19,
+      "bytes": 472313438,
+      "sections": 6
+    },
+    {
       "slug": "uva-darden-digital-product-management",
       "files": 233,
       "videos": 75,
@@ -1666,6 +2191,13 @@
       "videos": 63,
       "bytes": 561052849,
       "sections": 6
+    },
+    {
+      "slug": "vector-calculus-engineers",
+      "files": 287,
+      "videos": 62,
+      "bytes": 1319217594,
+      "sections": 5
     },
     {
       "slug": "wharton-entrepreneurship-opportunity",
@@ -1689,11 +2221,25 @@
       "sections": 4
     },
     {
+      "slug": "what-is-a-proof",
+      "files": 171,
+      "videos": 37,
+      "bytes": 628870656,
+      "sections": 6
+    },
+    {
       "slug": "wiley-problem-solving-skills-and-critical-thinking",
       "files": 82,
       "videos": 10,
       "bytes": 181209973,
       "sections": 10
+    },
+    {
+      "slug": "wiley-sales-negotiation-win-deals-close-with-confidence",
+      "files": 182,
+      "videos": 37,
+      "bytes": 212841064,
+      "sections": 37
     },
     {
       "slug": "working-as-a-scrum-master",
