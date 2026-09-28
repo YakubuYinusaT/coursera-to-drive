@@ -195,7 +195,8 @@ jobs:
 
   # Builds the file index the watch page reads: one JSON per course
   library:
-    if: inputs.action == 'index-library'
+    needs: [download, manifest]
+    if: always() && (inputs.action == 'index-library' || inputs.action == 'download')
     runs-on: ubuntu-latest
     timeout-minutes: 120
     permissions:
