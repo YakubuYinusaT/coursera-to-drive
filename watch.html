@@ -219,7 +219,7 @@ const S = {
   clientId: "", token: "", tokenClient: null, tokenClientFor: null,
   index: [], course: null, files: [], items: [], current: null,
   progress: {}, lastItem: {}, collapsed: {}, filter: "all", sort: "name",
-  pos: {}, cues: [], video: null, nativeOk: undefined, rate: 1
+  pos: {}, cues: [], video: null, nativeOk: undefined, rate: 1, worker: false, route: ""
 };
 
 const TOKEN_KEY = "cs_token";
@@ -311,6 +311,31 @@ function keepToken(token, expiresIn) {
   S.token = token;
   store.set(TOKEN_KEY, { token, exp: Date.now() + (expiresIn - 120) * 1000 });
   markSignedIn(true);
+  sendTokenToWorker();
+  S.nativeOk = undefined;   // a fresh token may unlock direct playback
+}
+
+// The service worker adds the Authorization header a <video> tag cannot send.
+async function startWorker() {
+  if (!("serviceWorker" in navigator)) return false;
+  try {
+    await navigator.serviceWorker.register("sw.js");
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) {
+      // first visit: the worker takes over a moment after it activates
+      await new Promise(done => {
+        const t = setTimeout(done, 3000);
+        navigator.serviceWorker.addEventListener("controllerchange", () => { clearTimeout(t); done(); }, { once: true });
+      });
+    }
+    S.worker = !!navigator.serviceWorker.controller;
+    sendTokenToWorker();
+    return S.worker;
+  } catch (e) { return false; }
+}
+
+function sendTokenToWorker() {
+  try { navigator.serviceWorker?.controller?.postMessage({ type: "token", token: S.token }); } catch (e) {}
 }
 
 function loadKeptToken() {
@@ -569,13 +594,18 @@ function renderResume() {
 async function canStreamNatively(id) {
   if (S.nativeOk !== undefined) return S.nativeOk;
   if (!S.token) return false;
-  try {
-    const r = await fetch(mediaUrl(id), { headers: { Range: "bytes=0-1" } });
-    S.nativeOk = r.status === 206 || r.status === 200;
-  } catch (e) { S.nativeOk = false; }
-  return S.nativeOk;
+  if (!S.worker) await startWorker();
+  if (S.worker) {
+    sendTokenToWorker();
+    try {
+      const r = await fetch(`media/${id}`, { headers: { Range: "bytes=0-1" }, cache: "no-store" });
+      if (r.status === 206 || r.status === 200) { S.nativeOk = true; S.route = "worker"; return true; }
+    } catch (e) { /* fall through */ }
+  }
+  S.nativeOk = false;
+  return false;
 }
-const mediaUrl = id => `https://www.googleapis.com/drive/v3/files/${id}?alt=media&access_token=${encodeURIComponent(S.token)}`;
+const mediaUrl = id => `media/${id}`;
 
 function savePos(id, seconds) {
   if (!isFinite(seconds) || seconds < 5) return;
@@ -613,10 +643,18 @@ function renderNative(item, box) {
   v.addEventListener("ended", () => { delete S.pos[item.id]; store.set("cs_pos", S.pos); step(1); });
   v.addEventListener("error", async () => {
     // most often the hour-long Google token ran out mid-lecture
-    const at = v.currentTime;
+    const at = v.currentTime || S.pos[item.id] || 0;
     savePos(item.id, at);
-    if (store.get("cs_granted", false)) { signIn(true); }
-    $("playerNote").textContent = "Playback stopped, signing in again. Press play once it reloads.";
+    $("playerNote").textContent = "Reconnecting to Drive...";
+    if (store.get("cs_granted", false)) signIn(true);
+    setTimeout(() => {
+      if (S.current?.id !== item.id) return;
+      sendTokenToWorker();
+      v.src = mediaUrl(item.id);
+      v.load();
+      v.addEventListener("loadedmetadata", () => { v.currentTime = at; v.play().catch(() => {}); }, { once: true });
+      $("playerNote").textContent = `Reconnected, resumed at ${clock(at)}.`;
+    }, 2500);
   });
 
   box.append(v);
@@ -843,6 +881,7 @@ async function boot() {
   const signedIn = loadKeptToken();
   markSignedIn(signedIn);
   showApp();
+  startWorker();
   // renew quietly in the background; Google only interrupts if the grant is gone
   if (!signedIn && store.get("cs_granted", false)) setTimeout(() => signIn(true), 600);
 }
