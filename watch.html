@@ -35,11 +35,11 @@ input[type=text],select{font:14px var(--sans);color:var(--ink);background:var(--
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 header.top{border-bottom:1px solid var(--rule);background:var(--panel);position:sticky;top:0;z-index:5}
-.brand{max-width:1560px;margin:0 auto;padding:13px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline}
+.brand{max-width:1800px;margin:0 auto;padding:13px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline}
 h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em}
 .brand .sub{color:var(--ink-faint);font-size:13px}
 .brand .spacer{flex:1 1 auto}
-main{max-width:1560px;margin:0 auto;padding:16px 16px 56px}
+main{max-width:1800px;margin:0 auto;padding:16px 20px 56px}
 h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;margin:0 0 8px}
 
 .setup{border:1px solid var(--rule);border-radius:4px;background:var(--panel);padding:18px;max-width:660px}
@@ -49,8 +49,11 @@ h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-
 .setup .row input{flex:1 1 280px;width:auto}
 code{font:13px var(--mono);background:var(--rule-soft);padding:1px 5px;border-radius:3px;word-break:break-all}
 
-.grid{display:grid;grid-template-columns:minmax(230px,1fr) minmax(230px,1.05fr) minmax(340px,2.3fr);gap:26px;align-items:start}
-@media (max-width:1080px){.grid{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:265px 305px minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:1240px){.grid{grid-template-columns:240px minmax(0,1fr)}
+  .grid .pane.player-pane{grid-column:1 / -1}}
+@media (max-width:820px){.grid{grid-template-columns:1fr}
+  .grid .pane.player-pane{grid-column:auto}}
 .pane{min-width:0}
 .scroll{max-height:calc(100vh - 250px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
 @media (max-width:1080px){.scroll{max-height:52vh}}
@@ -106,6 +109,8 @@ ul.plain li{border-bottom:1px solid var(--rule-soft)}
 .note{color:var(--ink-soft);font-size:13px;margin:10px 0 0}
 .note.warn{color:var(--fail)}
 .empty{color:var(--ink-faint);font-size:14px;padding:26px 6px;text-align:center}
+.standby{width:100%;aspect-ratio:16/9;border:1px dashed var(--rule);border-radius:4px;display:grid;place-items:center;
+  text-align:center;color:var(--ink-faint);font-size:14px;padding:20px}
 .hidden{display:none!important}
 kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:0 4px;color:var(--ink-faint)}
 </style>
@@ -137,6 +142,7 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
       <button class="go" id="saveClient" type="button">Sign in with Google</button>
       <button id="clearClient" class="small hidden" type="button">Use a different client ID</button>
     </div>
+    <button class="go hidden" id="signinBig" type="button" style="margin-top:4px">Sign in with Google</button>
     <p class="note" id="setupStatus"></p>
     <p class="note warn hidden" id="setupErr"></p>
   </div>
@@ -171,10 +177,11 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
       <p class="note" id="lecturesNote">Pick a course on the left.</p>
     </section>
 
-    <section class="pane">
+    <section class="pane player-pane">
       <h2>Now playing</h2>
       <div id="resumeBox" class="resume hidden"></div>
       <div class="player hidden" id="playerBox"></div>
+      <div class="standby" id="standby">Pick a lecture and it plays here, streamed from your Drive.</div>
       <p class="nowtitle" id="nowTitle"></p>
       <p class="nowmeta" id="nowMeta"></p>
       <div class="actions hidden" id="actions">
@@ -209,7 +216,7 @@ const pretty = s => s.replace(/\.[a-z0-9]+$/i, "").replace(/^\d+[_-]+/, "").repl
 const titlecase = s => pretty(s).replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
 const size = n => !n ? "" : n >= 1e9 ? (n / 1e9).toFixed(1) + " GB" : Math.max(1, Math.round(n / 1e6)) + " MB";
 
-S.clientId = store.get("cs_client_id", "");
+S.clientId = store.get("cs_client_id", "");   // a repo config wins over this
 S.progress = store.get("cs_progress", {});
 S.lastItem = store.get("cs_last_item", {});
 S.sort = store.get("cs_sort", "name");
@@ -518,6 +525,7 @@ function play(item) {
   const box = $("playerBox");
   box.textContent = "";
   box.classList.remove("hidden");
+  $("standby").classList.add("hidden");
   const frame = document.createElement("iframe");
   frame.src = `https://drive.google.com/file/d/${item.id}/preview`;
   frame.allow = "autoplay; fullscreen";
@@ -617,13 +625,43 @@ function parseCues(raw) {
 }
 
 /* ---------- boot ---------- */
+// config.json carries the Google client ID for every browser, so the setup box is only a fallback
+async function boot() {
+  try {
+    const r = await fetch("config.json?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) {
+      const cfg = await r.json();
+      if (cfg.googleClientId && cfg.googleClientId.endsWith(".apps.googleusercontent.com")) {
+        S.clientId = cfg.googleClientId;
+        $("setup").querySelector("ol").classList.add("hidden");
+        $("setup").querySelector(".row").classList.add("hidden");
+        $("setupStatus").textContent = "";
+        $("signinBig").classList.remove("hidden");
+        signIn();
+        return;
+      }
+    }
+  } catch (e) { /* fall back to pasting an ID */ }
+  if (S.clientId) {
+    $("clientId").value = S.clientId;
+    $("clearClient").classList.remove("hidden");
+    $("setupStatus").textContent = "Client ID saved. Click Sign in with Google.";
+  }
+}
+
+function signIn() {
+  const client = buildTokenClient();
+  if (!client) { setTimeout(signIn, 400); return; }
+  $("setupErr").classList.add("hidden");
+  $("setupStatus").textContent = "Opening Google sign-in...";
+  try { client.requestAccessToken({ prompt: store.get("cs_granted", false) ? "" : "consent" }); }
+  catch (e) { showSetupError(explain(e.message || "unknown")); }
+}
+$("signinBig").addEventListener("click", signIn);
+
 $("sort").value = S.sort;
 for (const c of $("filters").children) c.classList.toggle("on", c.dataset.f === S.filter);
-if (S.clientId) {
-  $("clientId").value = S.clientId;
-  $("clearClient").classList.remove("hidden");
-  $("setupStatus").textContent = "Client ID saved. Click Sign in with Google.";
-}
+boot();
 </script>
 </body>
 </html>
