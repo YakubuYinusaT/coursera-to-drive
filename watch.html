@@ -517,19 +517,26 @@ $("filters").addEventListener("click", e => {
 });
 
 /* ---------- one course ---------- */
+let openSeq = 0;
 async function openCourse(slug, autoplay) {
+  const seq = ++openSeq;
   S.course = slug;
   store.set("cs_last_course", slug);
   renderCourses();
   $("lecturesHead").textContent = titlecase(slug);
   $("lecturesNote").textContent = "Loading...";
+  S.items = [];
+  $("lectures").textContent = "";
+  let files;
   try {
     const r = await fetch(`library/${encodeURIComponent(slug)}.json?t=` + Date.now(), { cache: "no-store" });
-    S.files = await r.json();
+    files = await r.json();
   } catch (e) {
-    $("lecturesNote").textContent = "That course is not in the index yet.";
+    if (seq === openSeq) $("lecturesNote").textContent = "That course is not in the index yet.";
     return;
   }
+  if (seq !== openSeq) return;   // a newer click won
+  S.files = files;
   const videos = S.files.filter(f => (f.mime || "").startsWith("video/"));
   const texts = S.files.filter(f => /\.(srt|vtt|txt)$/i.test(f.name));
   S.items = videos.map(v => {
