@@ -1,0 +1,1185 @@
+{
+  "indexed": "2026-09-28T16:09:33Z",
+  "courses": [
+    {
+      "slug": "10k-women-10",
+      "files": 58,
+      "videos": 6
+    },
+    {
+      "slug": "10k-women-6",
+      "files": 66,
+      "videos": 4
+    },
+    {
+      "slug": "360-vr-video-production",
+      "files": 130,
+      "videos": 37
+    },
+    {
+      "slug": "3d-specialized-anatomy-physiology-systems-interactive-course",
+      "files": 81,
+      "videos": 27
+    },
+    {
+      "slug": "adhd-treatment",
+      "files": 70,
+      "videos": 12
+    },
+    {
+      "slug": "advanced-agile-for-product-managers-scaling-agile-teams",
+      "files": 38,
+      "videos": 11
+    },
+    {
+      "slug": "advanced-marketing--strategic-communication-mastery",
+      "files": 18,
+      "videos": 4
+    },
+    {
+      "slug": "advanced-negotiation-and-conflict-resolution-for-leaders",
+      "files": 31,
+      "videos": 9
+    },
+    {
+      "slug": "advanced-probability-and-statistical-methods",
+      "files": 131,
+      "videos": 37
+    },
+    {
+      "slug": "advanced-valuation-and-strategy",
+      "files": 156,
+      "videos": 35
+    },
+    {
+      "slug": "african-development--from-the-past-to-the-present",
+      "files": 91,
+      "videos": 23
+    },
+    {
+      "slug": "agile-atlassian-jira",
+      "files": 99,
+      "videos": 19
+    },
+    {
+      "slug": "agile-development-and-scrum",
+      "files": 93,
+      "videos": 29
+    },
+    {
+      "slug": "agile-product-management-fundamentals",
+      "files": 55,
+      "videos": 16
+    },
+    {
+      "slug": "agile-project-management",
+      "files": 190,
+      "videos": 46
+    },
+    {
+      "slug": "agribusiness-management-challenges",
+      "files": 128,
+      "videos": 40
+    },
+    {
+      "slug": "agriculture-economics-nature",
+      "files": 255,
+      "videos": 54
+    },
+    {
+      "slug": "algebra-i",
+      "files": 45,
+      "videos": 9
+    },
+    {
+      "slug": "algebra-ii",
+      "files": 26,
+      "videos": 5
+    },
+    {
+      "slug": "analysis-of-algorithms",
+      "files": 148,
+      "videos": 42
+    },
+    {
+      "slug": "analytic-combinatorics",
+      "files": 159,
+      "videos": 47
+    },
+    {
+      "slug": "analyze-capital-markets-using-economic-and-valuation-models",
+      "files": 33,
+      "videos": 11
+    },
+    {
+      "slug": "analyze-money-markets-short-term-financial-instruments",
+      "files": 32,
+      "videos": 10
+    },
+    {
+      "slug": "analyzing-and-visualizing-data-in-looker",
+      "files": 98,
+      "videos": 32
+    },
+    {
+      "slug": "anti-money-laundering-and-terrorist-financing-canada",
+      "files": 19,
+      "videos": 4
+    },
+    {
+      "slug": "applications-calculus",
+      "files": 66,
+      "videos": 21
+    },
+    {
+      "slug": "applied-scrum-for-agile-project-management",
+      "files": 173,
+      "videos": 24
+    },
+    {
+      "slug": "applying-project-management",
+      "files": 232,
+      "videos": 56
+    },
+    {
+      "slug": "art-of-negotiation",
+      "files": 63,
+      "videos": 14
+    },
+    {
+      "slug": "automata-and-computability-odc",
+      "files": 550,
+      "videos": 146
+    },
+    {
+      "slug": "b2b-sales-negotiation-preparation-and-strategy",
+      "files": 209,
+      "videos": 63
+    },
+    {
+      "slug": "basic-math-derivatives",
+      "files": 41,
+      "videos": 0
+    },
+    {
+      "slug": "basic-math-numbers-and-terminology",
+      "files": 21,
+      "videos": 0
+    },
+    {
+      "slug": "basic-mathematics-engineering",
+      "files": 208,
+      "videos": 63
+    },
+    {
+      "slug": "better-learning",
+      "files": 203,
+      "videos": 38
+    },
+    {
+      "slug": "beyond-the-obvious-how-to-think-in-the-age-of-generative-ai",
+      "files": 144,
+      "videos": 37
+    },
+    {
+      "slug": "biohacking-your-brains-health",
+      "files": 118,
+      "videos": 34
+    },
+    {
+      "slug": "bitesize-statistics-data-descriptive-statistics",
+      "files": 106,
+      "videos": 0
+    },
+    {
+      "slug": "bits-discrete-mathematics-computer-science-engineering",
+      "files": 543,
+      "videos": 136
+    },
+    {
+      "slug": "blockchain-business-models",
+      "files": 263,
+      "videos": 67
+    },
+    {
+      "slug": "blockchain-crypto-decentralized-finance",
+      "files": 187,
+      "videos": 50
+    },
+    {
+      "slug": "bond-mathematics-investment-analysis",
+      "files": 78,
+      "videos": 26
+    },
+    {
+      "slug": "bonds-and-stocks",
+      "files": 49,
+      "videos": 11
+    },
+    {
+      "slug": "building-your-freelancing-career",
+      "files": 109,
+      "videos": 26
+    },
+    {
+      "slug": "business-data",
+      "files": 242,
+      "videos": 49
+    },
+    {
+      "slug": "business-law-contracts-liability-and-regulation",
+      "files": 54,
+      "videos": 14
+    },
+    {
+      "slug": "buyer-decision-making-behaviour-influence-and-ethics",
+      "files": 75,
+      "videos": 18
+    },
+    {
+      "slug": "c-for-everyone",
+      "files": 168,
+      "videos": 53
+    },
+    {
+      "slug": "calculus-for-engineers",
+      "files": 336,
+      "videos": 67
+    },
+    {
+      "slug": "calculus-through-data-and-modelling-imits-derivatives",
+      "files": 67,
+      "videos": 19
+    },
+    {
+      "slug": "calculus-through-data-and-modelling-techniques-of-integration",
+      "files": 19,
+      "videos": 4
+    },
+    {
+      "slug": "central-banks-monetary-policies",
+      "files": 134,
+      "videos": 38
+    },
+    {
+      "slug": "chances-probability-uncertainty-statistics",
+      "files": 74,
+      "videos": 14
+    },
+    {
+      "slug": "circular-economy",
+      "files": 331,
+      "videos": 88
+    },
+    {
+      "slug": "classical-sociological-theory",
+      "files": 214,
+      "videos": 63
+    },
+    {
+      "slug": "communicate-with-impact",
+      "files": 102,
+      "videos": 31
+    },
+    {
+      "slug": "complex-analysis",
+      "files": 183,
+      "videos": 36
+    },
+    {
+      "slug": "complexity",
+      "files": 123,
+      "videos": 37
+    },
+    {
+      "slug": "compthinking",
+      "files": 110,
+      "videos": 18
+    },
+    {
+      "slug": "computer-vision-basics",
+      "files": 103,
+      "videos": 30
+    },
+    {
+      "slug": "confidence-self-esteem",
+      "files": 166,
+      "videos": 49
+    },
+    {
+      "slug": "connected-leadership",
+      "files": 190,
+      "videos": 42
+    },
+    {
+      "slug": "conversational-experiences-dialogflow",
+      "files": 82,
+      "videos": 26
+    },
+    {
+      "slug": "corporate-venturing",
+      "files": 85,
+      "videos": 21
+    },
+    {
+      "slug": "craft-territory-playbook",
+      "files": 22,
+      "videos": 6
+    },
+    {
+      "slug": "creative-thinking-techniques-and-tools-for-success",
+      "files": 133,
+      "videos": 31
+    },
+    {
+      "slug": "credit-analysis-in-action-economic-and-industry-essentials",
+      "files": 97,
+      "videos": 30
+    },
+    {
+      "slug": "critical-thinking-and-decision-skills",
+      "files": 3,
+      "videos": 1
+    },
+    {
+      "slug": "critical-thinking-logic",
+      "files": 31,
+      "videos": 9
+    },
+    {
+      "slug": "critical-thinking-problem-solving",
+      "files": 81,
+      "videos": 26
+    },
+    {
+      "slug": "crypto-info-theory",
+      "files": 75,
+      "videos": 21
+    },
+    {
+      "slug": "customer-data-analytics",
+      "files": 125,
+      "videos": 31
+    },
+    {
+      "slug": "data-cleaning",
+      "files": 111,
+      "videos": 26
+    },
+    {
+      "slug": "data-visualization-dashboards-excel-cognos",
+      "files": 62,
+      "videos": 15
+    },
+    {
+      "slug": "data-wrangling-analysis-abtesting",
+      "files": 136,
+      "videos": 43
+    },
+    {
+      "slug": "dataviz-design",
+      "files": 138,
+      "videos": 34
+    },
+    {
+      "slug": "decentralized-finance-primitives-duke",
+      "files": 97,
+      "videos": 18
+    },
+    {
+      "slug": "decision-making-how-to-choose-the-right-problem-to-solve",
+      "files": 84,
+      "videos": 4
+    },
+    {
+      "slug": "decisions-decisions-dashboards-and-reports",
+      "files": 239,
+      "videos": 52
+    },
+    {
+      "slug": "density-functional-theory",
+      "files": 137,
+      "videos": 34
+    },
+    {
+      "slug": "developing-innovative-ideas-for-product-leaders",
+      "files": 216,
+      "videos": 44
+    },
+    {
+      "slug": "development-economics-course",
+      "files": 300,
+      "videos": 74
+    },
+    {
+      "slug": "differential-equations-and-advanced-applications",
+      "files": 49,
+      "videos": 8
+    },
+    {
+      "slug": "differential-equations-and-applications-dea",
+      "files": 377,
+      "videos": 117
+    },
+    {
+      "slug": "differential-equations-part-iii-systems-of-equations",
+      "files": 106,
+      "videos": 34
+    },
+    {
+      "slug": "differentiation-calculus",
+      "files": 36,
+      "videos": 11
+    },
+    {
+      "slug": "digital-manufacturing-design",
+      "files": 59,
+      "videos": 13
+    },
+    {
+      "slug": "discounted-cash-flow",
+      "files": 83,
+      "videos": 15
+    },
+    {
+      "slug": "discrete-calculus",
+      "files": 58,
+      "videos": 18
+    },
+    {
+      "slug": "discrete-mathematics-for-computer-science-counting-probability",
+      "files": 378,
+      "videos": 121
+    },
+    {
+      "slug": "discrete-mathematics-for-computer-science-logic-set",
+      "files": 311,
+      "videos": 100
+    },
+    {
+      "slug": "drones-for-environmental-science",
+      "files": 87,
+      "videos": 21
+    },
+    {
+      "slug": "econometrics-1",
+      "files": 230,
+      "videos": 70
+    },
+    {
+      "slug": "economic-decision-making-part-1",
+      "files": 107,
+      "videos": 8
+    },
+    {
+      "slug": "economic-decision-making-part-2",
+      "files": 70,
+      "videos": 7
+    },
+    {
+      "slug": "economic-fluctuations",
+      "files": 3,
+      "videos": 1
+    },
+    {
+      "slug": "economic-growth-part-1",
+      "files": 119,
+      "videos": 37
+    },
+    {
+      "slug": "economic-growth-part-2",
+      "files": 108,
+      "videos": 33
+    },
+    {
+      "slug": "economic-policy",
+      "files": 206,
+      "videos": 60
+    },
+    {
+      "slug": "economics-currency-markets",
+      "files": 224,
+      "videos": 74
+    },
+    {
+      "slug": "economics-of-ai",
+      "files": 377,
+      "videos": 96
+    },
+    {
+      "slug": "economics-society-markets-and-inequality",
+      "files": 141,
+      "videos": 36
+    },
+    {
+      "slug": "effective-communication-for-leaders",
+      "files": 38,
+      "videos": 12
+    },
+    {
+      "slug": "electrodynamics-introduction",
+      "files": 47,
+      "videos": 12
+    },
+    {
+      "slug": "engineering-and-product-design-processes",
+      "files": 35,
+      "videos": 4
+    },
+    {
+      "slug": "engineering-essentials-with-nx",
+      "files": 155,
+      "videos": 37
+    },
+    {
+      "slug": "engineering-probability-and-statistics-part-1",
+      "files": 153,
+      "videos": 15
+    },
+    {
+      "slug": "engineering-probability-and-statistics-part-2",
+      "files": 132,
+      "videos": 14
+    },
+    {
+      "slug": "ensure-visual-consistency",
+      "files": 8,
+      "videos": 2
+    },
+    {
+      "slug": "entrepreneurship-strategy",
+      "files": 180,
+      "videos": 51
+    },
+    {
+      "slug": "etudier-en-france",
+      "files": 96,
+      "videos": 54
+    },
+    {
+      "slug": "excel-basics-data-analysis-ibm",
+      "files": 91,
+      "videos": 26
+    },
+    {
+      "slug": "excel-data-analysis",
+      "files": 174,
+      "videos": 32
+    },
+    {
+      "slug": "exploratory-data-analysis",
+      "files": 131,
+      "videos": 36
+    },
+    {
+      "slug": "finance-for-non-finance",
+      "files": 241,
+      "videos": 47
+    },
+    {
+      "slug": "finance-for-startups",
+      "files": 128,
+      "videos": 31
+    },
+    {
+      "slug": "finance-fundamentals",
+      "files": 139,
+      "videos": 21
+    },
+    {
+      "slug": "financial-markets-global",
+      "files": 616,
+      "videos": 130
+    },
+    {
+      "slug": "financial-risk-management-with-r",
+      "files": 96,
+      "videos": 22
+    },
+    {
+      "slug": "financing-startup-businesses",
+      "files": 118,
+      "videos": 27
+    },
+    {
+      "slug": "finite-element-method",
+      "files": 526,
+      "videos": 170
+    },
+    {
+      "slug": "firm-level-economics",
+      "files": 182,
+      "videos": 43
+    },
+    {
+      "slug": "firm-level-economics-markets",
+      "files": 196,
+      "videos": 48
+    },
+    {
+      "slug": "foundational-mathematics-for-ai",
+      "files": 213,
+      "videos": 50
+    },
+    {
+      "slug": "foundations-of-business-intelligence",
+      "files": 179,
+      "videos": 39
+    },
+    {
+      "slug": "foundations-of-data-science",
+      "files": 166,
+      "videos": 32
+    },
+    {
+      "slug": "foundations-of-neuroscience",
+      "files": 71,
+      "videos": 21
+    },
+    {
+      "slug": "foundations-of-sales-psychology-and-buyer-behavior",
+      "files": 87,
+      "videos": 28
+    },
+    {
+      "slug": "freelancing-business",
+      "files": 113,
+      "videos": 30
+    },
+    {
+      "slug": "from-prototyping-to-validating-business-models",
+      "files": 68,
+      "videos": 1
+    },
+    {
+      "slug": "futures-thinking",
+      "files": 1,
+      "videos": 0
+    },
+    {
+      "slug": "futuresthinking",
+      "files": 21,
+      "videos": 0
+    },
+    {
+      "slug": "game-theoretic-solution-concept-with-spreadsheets",
+      "files": 2,
+      "videos": 0
+    },
+    {
+      "slug": "game-theory-1",
+      "files": 164,
+      "videos": 52
+    },
+    {
+      "slug": "game-theory-introduction",
+      "files": 147,
+      "videos": 42
+    },
+    {
+      "slug": "generative-ai-elevate-your-data-science-career",
+      "files": 80,
+      "videos": 24
+    },
+    {
+      "slug": "generative-ai-introduction-and-applications",
+      "files": 54,
+      "videos": 15
+    },
+    {
+      "slug": "generative-ai-prompt-engineering-for-everyone",
+      "files": 49,
+      "videos": 13
+    },
+    {
+      "slug": "ghi-healthcare-entrepreneurship-taking-ideas-to-market",
+      "files": 65,
+      "videos": 16
+    },
+    {
+      "slug": "global-financial-markets-instruments",
+      "files": 205,
+      "videos": 41
+    },
+    {
+      "slug": "global-trade-macroeconomic-analysis",
+      "files": 147,
+      "videos": 49
+    },
+    {
+      "slug": "ha2-polynomials",
+      "files": 38,
+      "videos": 8
+    },
+    {
+      "slug": "illinois-tech-business-economics-and-game-theory-for-decision-making",
+      "files": 175,
+      "videos": 37
+    },
+    {
+      "slug": "illinois-tech-managerial-economics-buyer-and-seller-behavior",
+      "files": 195,
+      "videos": 48
+    },
+    {
+      "slug": "illinois-tech-systems-integration-bit",
+      "files": 205,
+      "videos": 47
+    },
+    {
+      "slug": "implementing-supply-chain-analytics",
+      "files": 204,
+      "videos": 49
+    },
+    {
+      "slug": "influencing-people",
+      "files": 148,
+      "videos": 41
+    },
+    {
+      "slug": "inform-speech",
+      "files": 186,
+      "videos": 53
+    },
+    {
+      "slug": "information-technology-it-fundamentals-for-everyone",
+      "files": 198,
+      "videos": 61
+    },
+    {
+      "slug": "information-theory",
+      "files": 350,
+      "videos": 152
+    },
+    {
+      "slug": "initiating-planning",
+      "files": 134,
+      "videos": 35
+    },
+    {
+      "slug": "innovation--breaking-constraints-with-great-solutions",
+      "files": 127,
+      "videos": 32
+    },
+    {
+      "slug": "integral-calculus-and-numerical-analysis-for-data-science",
+      "files": 59,
+      "videos": 19
+    },
+    {
+      "slug": "integration-calculus",
+      "files": 57,
+      "videos": 18
+    },
+    {
+      "slug": "intellectual-humility-theory",
+      "files": 111,
+      "videos": 26
+    },
+    {
+      "slug": "international-business",
+      "files": 120,
+      "videos": 40
+    },
+    {
+      "slug": "intro-economic-theories",
+      "files": 260,
+      "videos": 86
+    },
+    {
+      "slug": "intro-self-driving-cars",
+      "files": 227,
+      "videos": 50
+    },
+    {
+      "slug": "intro-to-devops",
+      "files": 94,
+      "videos": 29
+    },
+    {
+      "slug": "intro-to-psych",
+      "files": 87,
+      "videos": 23
+    },
+    {
+      "slug": "introduccion-al-calculo",
+      "files": 353,
+      "videos": 64
+    },
+    {
+      "slug": "introduction-psych",
+      "files": 280,
+      "videos": 71
+    },
+    {
+      "slug": "introduction-to-adhd-what-it-is-and-how-its-treated",
+      "files": 84,
+      "videos": 17
+    },
+    {
+      "slug": "introduction-to-advanced-calculus",
+      "files": 212,
+      "videos": 52
+    },
+    {
+      "slug": "introduction-to-american-corporate-law",
+      "files": 102,
+      "videos": 34
+    },
+    {
+      "slug": "introduction-to-banking",
+      "files": 113,
+      "videos": 37
+    },
+    {
+      "slug": "introduction-to-cognitive-psychology-and-neuropsychology",
+      "files": 109,
+      "videos": 16
+    },
+    {
+      "slug": "introduction-to-scrum-master-profession",
+      "files": 64,
+      "videos": 16
+    },
+    {
+      "slug": "introduction-to-software-engineering",
+      "files": 163,
+      "videos": 52
+    },
+    {
+      "slug": "introduction-to-software-product-management",
+      "files": 82,
+      "videos": 17
+    },
+    {
+      "slug": "leadership-and-organizational-behavior",
+      "files": 83,
+      "videos": 8
+    },
+    {
+      "slug": "leadershipskills",
+      "files": 330,
+      "videos": 94
+    },
+    {
+      "slug": "life-with-adhd",
+      "files": 227,
+      "videos": 71
+    },
+    {
+      "slug": "machine-design1",
+      "files": 182,
+      "videos": 44
+    },
+    {
+      "slug": "market-research",
+      "files": 119,
+      "videos": 29
+    },
+    {
+      "slug": "market-research-marketing-psychology",
+      "files": 141,
+      "videos": 47
+    },
+    {
+      "slug": "marketing-analytics-foundation",
+      "files": 181,
+      "videos": 54
+    },
+    {
+      "slug": "marketing-psychology",
+      "files": 45,
+      "videos": 15
+    },
+    {
+      "slug": "mindshift",
+      "files": 177,
+      "videos": 54
+    },
+    {
+      "slug": "modern-world",
+      "files": 153,
+      "videos": 46
+    },
+    {
+      "slug": "modern-world-2",
+      "files": 153,
+      "videos": 51
+    },
+    {
+      "slug": "money-banking",
+      "files": 637,
+      "videos": 200
+    },
+    {
+      "slug": "negotiation",
+      "files": 484,
+      "videos": 141
+    },
+    {
+      "slug": "negotiation-skills",
+      "files": 207,
+      "videos": 43
+    },
+    {
+      "slug": "neuromarketing",
+      "files": 104,
+      "videos": 24
+    },
+    {
+      "slug": "neuromarketing-mercado-consumidor",
+      "files": 27,
+      "videos": 0
+    },
+    {
+      "slug": "neuromarketing-toolbox",
+      "files": 127,
+      "videos": 39
+    },
+    {
+      "slug": "packt-agile-product-owner-level-1-certification-mock-exams-7kzyy",
+      "files": 369,
+      "videos": 122
+    },
+    {
+      "slug": "persuade-speech",
+      "files": 191,
+      "videos": 54
+    },
+    {
+      "slug": "practice-exam-for-aipmm-certified-product-manager-cpm",
+      "files": 18,
+      "videos": 2
+    },
+    {
+      "slug": "practice-exam-for-scrum-alliance-csm-certification",
+      "files": 18,
+      "videos": 3
+    },
+    {
+      "slug": "principles-of-management",
+      "files": 328,
+      "videos": 94
+    },
+    {
+      "slug": "problem-solving",
+      "files": 36,
+      "videos": 4
+    },
+    {
+      "slug": "procrastination-overcome",
+      "files": 97,
+      "videos": 27
+    },
+    {
+      "slug": "product-management-an-introduction",
+      "files": 139,
+      "videos": 39
+    },
+    {
+      "slug": "product-management-capstone",
+      "files": 44,
+      "videos": 9
+    },
+    {
+      "slug": "product-management-developing-and-delivering-a-new-product",
+      "files": 109,
+      "videos": 34
+    },
+    {
+      "slug": "product-management-foundations-and-stakeholder-collaboration",
+      "files": 134,
+      "videos": 41
+    },
+    {
+      "slug": "product-management-initial-product-strategy-and-plan",
+      "files": 121,
+      "videos": 38
+    },
+    {
+      "slug": "project-initiation-google",
+      "files": 150,
+      "videos": 35
+    },
+    {
+      "slug": "project-management-foundations",
+      "files": 152,
+      "videos": 39
+    },
+    {
+      "slug": "project-planning-google",
+      "files": 200,
+      "videos": 51
+    },
+    {
+      "slug": "project-risk-quality-management",
+      "files": 138,
+      "videos": 35
+    },
+    {
+      "slug": "prompt-engineering",
+      "files": 155,
+      "videos": 38
+    },
+    {
+      "slug": "protect-and-grow-your-business",
+      "files": 105,
+      "videos": 29
+    },
+    {
+      "slug": "public-speaking",
+      "files": 203,
+      "videos": 59
+    },
+    {
+      "slug": "python-for-applied-data-science-ai",
+      "files": 93,
+      "videos": 26
+    },
+    {
+      "slug": "reproducible-research",
+      "files": 117,
+      "videos": 33
+    },
+    {
+      "slug": "retrieval-augmented-generation-rag",
+      "files": 150,
+      "videos": 49
+    },
+    {
+      "slug": "scope-time-management-cost",
+      "files": 184,
+      "videos": 46
+    },
+    {
+      "slug": "scrum-master-capstone",
+      "files": 73,
+      "videos": 16
+    },
+    {
+      "slug": "six-sigma-principles2",
+      "files": 138,
+      "videos": 36
+    },
+    {
+      "slug": "social-media-management",
+      "files": 153,
+      "videos": 47
+    },
+    {
+      "slug": "social-psychology",
+      "files": 336,
+      "videos": 51
+    },
+    {
+      "slug": "socially-engaged-design",
+      "files": 146,
+      "videos": 30
+    },
+    {
+      "slug": "speaking-and-presenting-pitches-persuasion",
+      "files": 79,
+      "videos": 18
+    },
+    {
+      "slug": "spjimr-marketing-management-mooc",
+      "files": 172,
+      "videos": 56
+    },
+    {
+      "slug": "startup-entrepreneurship-from-idea-to-startup",
+      "files": 73,
+      "videos": 20
+    },
+    {
+      "slug": "startup-funding",
+      "files": 142,
+      "videos": 32
+    },
+    {
+      "slug": "startup-idea",
+      "files": 65,
+      "videos": 8
+    },
+    {
+      "slug": "startup-valuation-methods",
+      "files": 129,
+      "videos": 33
+    },
+    {
+      "slug": "startup101",
+      "files": 63,
+      "videos": 21
+    },
+    {
+      "slug": "supervised-learning-and-its-applications-in-marketing",
+      "files": 142,
+      "videos": 34
+    },
+    {
+      "slug": "supply-chain-digitization-strategy-and-design",
+      "files": 292,
+      "videos": 74
+    },
+    {
+      "slug": "the-path-to-insights-data-models-and-pipelines",
+      "files": 185,
+      "videos": 40
+    },
+    {
+      "slug": "the-psychology-of-decision-making",
+      "files": 135,
+      "videos": 10
+    },
+    {
+      "slug": "the-science-of-learning-how-learning-works-mqfoa",
+      "files": 216,
+      "videos": 54
+    },
+    {
+      "slug": "understanding-arguments",
+      "files": 104,
+      "videos": 32
+    },
+    {
+      "slug": "uva-darden-agile-analytics",
+      "files": 188,
+      "videos": 59
+    },
+    {
+      "slug": "uva-darden-digital-product-management",
+      "files": 233,
+      "videos": 75
+    },
+    {
+      "slug": "uva-darden-market-analytics",
+      "files": 217,
+      "videos": 63
+    },
+    {
+      "slug": "wharton-entrepreneurship-opportunity",
+      "files": 148,
+      "videos": 35
+    },
+    {
+      "slug": "wharton-marketing",
+      "files": 145,
+      "videos": 47
+    },
+    {
+      "slug": "wharton-quantitative-modeling",
+      "files": 107,
+      "videos": 33
+    },
+    {
+      "slug": "wiley-problem-solving-skills-and-critical-thinking",
+      "files": 82,
+      "videos": 10
+    },
+    {
+      "slug": "working-as-a-scrum-master",
+      "files": 139,
+      "videos": 38
+    }
+  ]
+}
