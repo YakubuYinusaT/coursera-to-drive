@@ -115,11 +115,18 @@ details#creds summary:hover .sumline{color:var(--ink)}
       <li>Under Permissions set <strong>Actions</strong> to <strong>Read and write</strong>.</li>
       <li>Generate the token, copy it, and paste it below.</li>
     </ol>
-    <form id="tokenForm">
-      <label class="field" for="token">GitHub token
-        <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_..."></label>
-      <button class="go" type="submit">Save token</button>
-    </form>
+    <div id="ghSignin" class="hidden" style="margin:14px 0 6px">
+      <button class="go" id="ghBtn" type="button">Sign in with GitHub</button>
+      <p class="note" id="ghNote">One click. The first sign-in can take a minute while the login service wakes up.</p>
+    </div>
+    <details id="manualWrap">
+      <summary style="cursor:pointer;font-size:13px;color:var(--ink-faint)">Paste a token instead</summary>
+      <form id="tokenForm" style="margin-top:10px">
+        <label class="field" for="token">GitHub token
+          <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_..."></label>
+        <button class="go" type="submit">Save token</button>
+      </form>
+    </details>
     <p class="note warn hidden" id="tokenErr"></p>
   </div>
 
@@ -227,6 +234,67 @@ $("forget").addEventListener("click", () => {
   clearInterval(state.timer);
   showApp(false);
 });
+
+/* ---------- Sign in with GitHub ---------- */
+// GitHub will not swap a login code for a token inside a browser, so the small
+// service in auth/ finishes that step and hands the token back.
+let CFG = {};
+
+async function loadConfig() {
+  try {
+    const r = await fetch("config.json?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) CFG = await r.json();
+  } catch (e) {}
+  if (CFG.githubClientId && CFG.authService) $("ghSignin").classList.remove("hidden");
+  else $("manualWrap").open = true;
+}
+
+$("ghBtn").addEventListener("click", () => {
+  const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  try { sessionStorage.setItem("cs_oauth_state", state); } catch (e) {}
+  const url = new URL("https://github.com/login/oauth/authorize");
+  url.searchParams.set("client_id", CFG.githubClientId);
+  url.searchParams.set("redirect_uri", location.origin + location.pathname);
+  url.searchParams.set("scope", "repo workflow");
+  url.searchParams.set("state", state);
+  location.href = url.toString();
+});
+
+async function finishGithubLogin() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+  if (!code) return false;
+
+  let expected = null;
+  try { expected = sessionStorage.getItem("cs_oauth_state"); } catch (e) {}
+  history.replaceState({}, "", location.pathname);
+  if (params.get("state") !== expected) {
+    $("tokenErr").textContent = "That sign-in did not come from this page. Try again.";
+    $("tokenErr").classList.remove("hidden");
+    return false;
+  }
+
+  $("ghNote").textContent = "Finishing sign-in. The service may need a minute to wake up...";
+  try {
+    const r = await fetch(CFG.authService.replace(/\/$/, "") + "/exchange", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, redirect_uri: location.origin + location.pathname })
+    });
+    const data = await r.json();
+    if (!r.ok || !data.access_token) throw new Error(data.error || "GitHub refused the sign-in.");
+    state.token = data.access_token;
+    try { localStorage.setItem("cs_token", data.access_token); } catch (e) {}
+    showApp(true); start();
+    return true;
+  } catch (err) {
+    $("ghNote").textContent = "";
+    $("tokenErr").textContent = err.message + " You can paste a token instead.";
+    $("tokenErr").classList.remove("hidden");
+    $("manualWrap").open = true;
+    return false;
+  }
+}
 
 const gh = (path, opts = {}) => fetch(API + path, {
   ...opts,
@@ -546,7 +614,13 @@ function start() {
   state.timer = setInterval(() => { if (!document.hidden) refresh(); }, 20000);
 }
 
-if (state.token) { showApp(true); start(); } else { showApp(false); loadCourses(); }
+(async () => {
+  await loadConfig();
+  if (state.token) { showApp(true); start(); return; }
+  showApp(false);
+  loadCourses();
+  finishGithubLogin();
+})();
 </script>
 </body>
 </html>

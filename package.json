@@ -1,0 +1,7 @@
+{
+  "name": "coursera-to-drive-auth",
+  "private": true,
+  "description": "Completes the GitHub login handshake for the Course Shelf pages",
+  "engines": { "node": ">=20" },
+  "scripts": { "start": "node auth/server.js" }
+}
