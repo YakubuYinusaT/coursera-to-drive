@@ -131,6 +131,10 @@ ul.plain li{border-bottom:1px solid var(--rule-soft)}
   .player-pane .player,.player-pane .standby{position:sticky;top:96px}
   .transcript{max-height:none}
 }
+.mode{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  border:1px solid var(--rule);border-left:3px solid var(--run);background:var(--panel);
+  padding:10px 13px;border-radius:3px;margin-bottom:12px;font-size:13px;color:var(--ink-soft)}
+.mode.good{border-left-color:var(--done)}
 .hidden{display:none!important}
 kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:0 4px;color:var(--ink-faint)}
 </style>
@@ -205,6 +209,10 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
 
     <section class="pane player-pane">
       <h2>Now playing</h2>
+      <div id="modeBar" class="mode hidden">
+        <span id="modeText"></span>
+        <button id="modeAction" class="small go" type="button"></button>
+      </div>
       <div id="resumeBox" class="resume hidden"></div>
       <div class="player hidden" id="playerBox"></div>
       <div class="standby" id="standby">Pick a lecture and it plays here, streamed from your Drive.</div>
@@ -240,7 +248,7 @@ const S = {
   clientId: "", token: "", tokenClient: null, tokenClientFor: null,
   index: [], course: null, files: [], items: [], current: null,
   progress: {}, lastItem: {}, collapsed: {}, filter: "all", sort: "name",
-  pos: {}, cues: [], video: null, nativeOk: undefined, rate: 1, worker: false, route: ""
+  pos: {}, cues: [], video: null, nativeOk: undefined, rate: 1, vol: 1, worker: false, route: ""
 };
 
 const TOKEN_KEY = "cs_token";
@@ -263,6 +271,7 @@ S.progress = store.get("cs_progress", {});
 S.lastItem = store.get("cs_last_item", {});
 S.pos = store.get("cs_pos", {});
 S.rate = store.get("cs_rate", 1);
+S.vol = store.get("cs_vol", 1);
 S.sort = store.get("cs_sort", "name");
 S.filter = store.get("cs_filter", "all");
 
@@ -281,6 +290,7 @@ function buildTokenClient() {
       store.set("cs_granted", true);
       $("setupStatus").textContent = "";
       showApp();
+      if (S.current && S.route !== "worker") retryNative();
       if (S.pendingTranscript) { const it = S.pendingTranscript; S.pendingTranscript = null; loadTranscript(it); }
     },
     error_callback: err => showSetupError(explain(err?.type || err?.message || "unknown"))
@@ -655,6 +665,41 @@ async function canStreamNatively(id) {
 }
 const mediaUrl = id => `media/${id}`;
 
+function showMode(kind) {
+  const bar = $("modeBar"), text = $("modeText"), action = $("modeAction");
+  bar.classList.remove("hidden");
+  if (kind === "native") {
+    bar.classList.add("good");
+    text.textContent = "Full quality stream. Speed, resume and auto-advance are on.";
+    action.classList.add("hidden");
+    setTimeout(() => { if (S.route === "worker") bar.classList.add("hidden"); }, 4000);
+    return;
+  }
+  bar.classList.remove("good");
+  action.classList.remove("hidden");
+  if (!S.token) {
+    text.textContent = S.current
+      ? "Drive viewer: 360p, no resume, no auto-advance. Sign in to stream the original file."
+      : "Sign in with Google to stream lectures at full quality, with resume and auto-advance.";
+    action.textContent = "Sign in with Google";
+  } else {
+    text.textContent = "Drive viewer in use. The direct stream did not start.";
+    action.textContent = "Try full quality";
+  }
+}
+
+async function retryNative() {
+  S.nativeOk = undefined;
+  await startWorker();
+  sendTokenToWorker();
+  if (S.current) await play(S.current);
+}
+
+$("modeAction").addEventListener("click", () => {
+  if (!S.token) signIn(false);
+  else retryNative();
+});
+
 function savePos(id, seconds) {
   if (!isFinite(seconds) || seconds < 5) return;
   S.pos[id] = Math.floor(seconds);
@@ -667,6 +712,7 @@ function renderNative(item, box) {
   v.style.cssText = "position:absolute;inset:0;width:100%;height:100%;background:#000";
   v.src = mediaUrl(item.id);
   v.playbackRate = S.rate;
+  v.volume = S.vol;
   S.video = v;
 
   const start = S.pos[item.id] || 0;
@@ -688,6 +734,13 @@ function renderNative(item, box) {
     }
   });
   v.addEventListener("pause", () => savePos(item.id, v.currentTime));
+  v.addEventListener("volumechange", () => { S.vol = v.volume; store.set("cs_vol", S.vol); });
+  v.addEventListener("ratechange", () => {
+    if (!v.playbackRate) return;
+    S.rate = v.playbackRate;
+    store.set("cs_rate", S.rate);
+    $("speed").value = String(S.rate);
+  });
   v.addEventListener("ended", () => { delete S.pos[item.id]; store.set("cs_pos", S.pos); step(1); });
   let retried = false;
   v.addEventListener("error", () => {
@@ -697,9 +750,11 @@ function renderNative(item, box) {
       // stop rather than bounce between sign-in and playback
       $("playerNote").textContent = "Drive would not stream this lecture. Falling back to the Drive viewer.";
       S.nativeOk = false;
+      S.route = "";
       const box = $("playerBox");
       box.textContent = "";
       renderEmbed(item, box);
+      showMode("embed");
       return;
     }
     retried = true;
@@ -752,6 +807,7 @@ async function play(item) {
   sendTokenToWorker();
   const native = await canStreamNatively(item.id);
   const start = native ? renderNative(item, box) : renderEmbed(item, box);
+  showMode(native ? "native" : "embed");
 
   const i = S.items.findIndex(x => x.id === item.id);
   $("nowTitle").textContent = item.label;
@@ -941,7 +997,7 @@ async function boot() {
   showApp();
   startWorker();
   // renew quietly in the background; Google only interrupts if the grant is gone
-  if (!signedIn) setTimeout(maybeSignIn, 600);
+  if (!signedIn) { showMode("embed"); setTimeout(maybeSignIn, 600); }
 }
 
 let lastSignIn = 0;
@@ -966,6 +1022,7 @@ $("signinBig").addEventListener("click", () => signIn(false));
 $("signinSmall").addEventListener("click", () => signIn(false));
 
 $("sort").value = S.sort;
+$("speed").value = String(S.rate);
 for (const c of $("filters").children) c.classList.toggle("on", c.dataset.f === S.filter);
 boot();
 </script>
