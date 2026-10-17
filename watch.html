@@ -131,6 +131,11 @@ ul.plain li{border-bottom:1px solid var(--rule-soft)}
   .player-pane .player,.player-pane .standby{position:sticky;top:96px}
   .transcript{max-height:none}
 }
+.playerchip{font:11px var(--mono);letter-spacing:.04em;text-transform:uppercase;margin:6px 0 0;color:var(--ink-faint)}
+.playerchip b{font-weight:500}
+.playerchip.direct b{color:var(--done)}
+.playerchip.viewer b{color:var(--run)}
+.playerchip button{font:11px var(--mono);padding:2px 7px;margin-left:8px;text-transform:none;letter-spacing:0}
 .mode{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
   border:1px solid var(--rule);border-left:3px solid var(--run);background:var(--panel);
   padding:10px 13px;border-radius:3px;margin-bottom:12px;font-size:13px;color:var(--ink-soft)}
@@ -218,6 +223,7 @@ kbd{font:11px var(--mono);border:1px solid var(--rule);border-bottom-width:2px;b
       <div class="standby" id="standby">Pick a lecture and it plays here, streamed from your Drive.</div>
       <p class="nowtitle" id="nowTitle"></p>
       <p class="nowmeta" id="nowMeta"></p>
+      <p class="playerchip" id="playerChip"></p>
       <div class="actions hidden" id="actions">
         <button id="prevUp" type="button">Previous</button>
         <button id="markWatched" type="button">Mark watched</button>
@@ -670,6 +676,36 @@ async function canStreamNatively(id) {
 }
 const mediaUrl = id => `media/${id}`;
 
+function renderChip(native) {
+  const chip = $("playerChip");
+  chip.textContent = "";
+  chip.className = "playerchip " + (native ? "direct" : "viewer");
+  const label = document.createElement("span");
+  label.append(document.createTextNode("Player: "));
+  const b = document.createElement("b");
+  b.textContent = native ? "direct stream, full quality" : "Drive viewer, 360p";
+  label.append(b);
+  chip.append(label);
+
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.textContent = "Copy diagnostics";
+  copy.addEventListener("click", async () => {
+    const info = {
+      player: native ? "direct" : "drive-viewer",
+      reason: S.why || "(none)",
+      signedIn: !!S.token,
+      workerControlling: !!navigator.serviceWorker?.controller,
+      lastStream: S.lastMedia || null,
+      file: S.current?.id, course: S.course
+    };
+    try { await navigator.clipboard.writeText(JSON.stringify(info, null, 2)); copy.textContent = "Copied"; }
+    catch (e) { console.log("[player] diagnostics", info); copy.textContent = "See console"; }
+    setTimeout(() => { copy.textContent = "Copy diagnostics"; }, 3000);
+  });
+  chip.append(copy);
+}
+
 function showMode(kind) {
   const bar = $("modeBar"), text = $("modeText"), action = $("modeAction");
   bar.classList.remove("hidden");
@@ -764,6 +800,7 @@ function renderNative(item, box) {
       box.textContent = "";
       renderEmbed(item, box);
       showMode("embed");
+      renderChip(false);
       return;
     }
     retried = true;
@@ -817,6 +854,7 @@ async function play(item) {
   const native = await canStreamNatively(item.id);
   const start = native ? renderNative(item, box) : renderEmbed(item, box);
   showMode(native ? "native" : "embed");
+  renderChip(native);
 
   const i = S.items.findIndex(x => x.id === item.id);
   $("nowTitle").textContent = item.label;
