@@ -36,10 +36,39 @@ async function askPagesForToken() {
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+
+  const check = url.pathname.match(/\/mediacheck\/([A-Za-z0-9_-]+)$/);
+  if (check) return event.respondWith(diagnose(check[1]));
+
   const match = url.pathname.match(/\/media\/([A-Za-z0-9_-]+)$/);
   if (!match) return;
   event.respondWith(stream(match[1], event.request));
 });
+
+// Reports what Drive actually said, so the page can explain a failure
+// instead of only noticing one.
+async function diagnose(fileId) {
+  const say = body => new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
+  const token = TOKEN || await askPagesForToken();
+  if (!token) return say({ ok: false, reason: "the worker has no Google token" });
+
+  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`;
+  try {
+    const r = await fetch(url, { headers: { Authorization: "Bearer " + token, Range: "bytes=0-1" }, cache: "no-store" });
+    if (r.status === 206 || r.status === 200) return say({ ok: true, status: r.status, ranges: r.status === 206 });
+    const text = await r.text().catch(() => "");
+    return say({ ok: false, status: r.status, reason: `Drive answered ${r.status}`, detail: text.slice(0, 200) });
+  } catch (e) {
+    // a blocked range request shows up here; try again without it
+    try {
+      const plain = await fetch(url, { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+      return say({ ok: plain.ok, status: plain.status, ranges: false,
+        reason: plain.ok ? "Drive refuses byte ranges, so seeking would break" : `Drive answered ${plain.status}` });
+    } catch (e2) {
+      return say({ ok: false, reason: "the request to Drive failed: " + (e2.message || e.message) });
+    }
+  }
+}
 
 async function stream(fileId, request) {
   let token = TOKEN || await askPagesForToken();

@@ -650,20 +650,19 @@ function renderResume() {
 // Drive's embedded viewer cannot report a playback position, so try a real
 // video element first and keep the embed as a fallback.
 async function canStreamNatively(id) {
-  if (S.nativeOk !== undefined) return S.nativeOk;
+  if (S.nativeOk !== undefined) return S.nativeOk;   // S.why still holds the reason
   if (!S.token) { S.why = "you are not signed in to Google"; return false; }
   if (!S.worker) await startWorker();
   if (!S.worker) { S.why = "the helper that adds your sign-in to video requests did not start"; S.nativeOk = false; return false; }
   sendTokenToWorker();
   try {
-    const r = await fetch(`media/${id}`, { headers: { Range: "bytes=0-1" }, cache: "no-store" });
-    if (r.status === 206 || r.status === 200) { S.nativeOk = true; S.route = "worker"; S.why = ""; return true; }
-    const body = await r.text().catch(() => "");
-    S.why = r.status === 401 ? "Google rejected the sign-in (401)"
-      : r.status === 403 ? "Google refused access to the file (403)"
-      : `Drive answered ${r.status}` + (body ? ": " + body.slice(0, 80) : "");
+    const r = await fetch(`mediacheck/${id}`, { cache: "no-store" });
+    const d = await r.json();
+    console.log("[player] Drive check", d);
+    if (d.ok) { S.nativeOk = true; S.route = "worker"; S.why = ""; return true; }
+    S.why = (d.reason || "Drive refused the request") + (d.detail ? ": " + d.detail.replace(/\s+/g, " ").slice(0, 90) : "");
   } catch (e) {
-    S.why = "the request never completed (" + (e.message || "unknown") + ")";
+    S.why = "the check never completed (" + (e.message || "unknown") + ")";
   }
   S.nativeOk = false;
   return false;
