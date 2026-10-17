@@ -70,6 +70,29 @@ async function diagnose(fileId) {
   }
 }
 
+/* Google hides Content-Range from scripts on a cross-origin read, so a 206
+   arrives with no label saying which bytes it holds, and the player rejects it.
+   The file's total size plus the length actually returned let us rebuild it. */
+const sizes = new Map();
+
+function parseRange(header) {
+  const m = /bytes=(\d*)-(\d*)/.exec(header || "");
+  if (!m) return { start: 0, end: null };
+  return { start: m[1] ? Number(m[1]) : 0, end: m[2] ? Number(m[2]) : null };
+}
+
+async function fileSize(fileId, token) {
+  if (sizes.has(fileId)) return sizes.get(fileId);
+  try {
+    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=size&supportsAllDrives=true`,
+      { headers: { Authorization: "Bearer " + token } });
+    if (!r.ok) return null;
+    const total = Number((await r.json()).size) || null;
+    if (total) sizes.set(fileId, total);
+    return total;
+  } catch (e) { return null; }
+}
+
 async function report(msg) {
   const pages = await self.clients.matchAll({ includeUncontrolled: true, type: "window" });
   for (const p of pages) p.postMessage(msg);
@@ -108,8 +131,19 @@ async function stream(fileId, request) {
     const v = upstream.headers.get(h);
     if (v) out.set(h, v);
   }
-  if (!out.has("Accept-Ranges")) out.set("Accept-Ranges", "bytes");
+  out.set("Accept-Ranges", "bytes");
   out.set("Cache-Control", "no-store");
+
+  let status = upstream.status;
+  if (status === 206 && !out.has("Content-Range")) {
+    const total = await fileSize(fileId, token);
+    const { start } = parseRange(rangeIn);
+    const len = Number(out.get("Content-Length")) || null;
+    if (total && len) out.set("Content-Range", `bytes ${start}-${start + len - 1}/${total}`);
+    else if (total) out.set("Content-Range", `bytes ${start}-${total - 1}/${total}`);
+    else if (start === 0) status = 200;   // no size to work with: serve it whole
+    else return new Response("Cannot describe this byte range", { status: 416 });
+  }
 
   // Drive sometimes labels a file as a generic download, which the player refuses
   const type = out.get("Content-Type") || "";
@@ -117,9 +151,9 @@ async function stream(fileId, request) {
 
   report({
     type: "media-log", file: fileId, status: upstream.status,
-    rangeIn: rangeIn || "(none)", contentRange: out.get("Content-Range") || "(none)",
+    rangeIn: rangeIn || "(none)", contentRange: out.get("Content-Range") || "(none)", served: status,
     contentType: out.get("Content-Type")
   });
 
-  return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: out });
+  return new Response(upstream.body, { status, statusText: upstream.statusText, headers: out });
 }
