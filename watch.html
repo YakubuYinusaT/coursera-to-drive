@@ -356,8 +356,10 @@ function keepToken(token, expiresIn) {
 async function startWorker() {
   if (!("serviceWorker" in navigator)) return false;
   try {
-    await navigator.serviceWorker.register("sw.js");
+    const reg = await navigator.serviceWorker.register("sw.js");
     await navigator.serviceWorker.ready;
+    reg.update().catch(() => {});
+
     if (!navigator.serviceWorker.controller) {
       // first visit: the worker takes over a moment after it activates
       await new Promise(done => {
@@ -365,6 +367,20 @@ async function startWorker() {
         navigator.serviceWorker.addEventListener("controllerchange", () => { clearTimeout(t); done(); }, { once: true });
       });
     }
+
+    // A hard reload (Ctrl+Shift+R) loads the page with the worker bypassed, so
+    // it is installed but not in charge. One ordinary reload hands it control.
+    if (!navigator.serviceWorker.controller && reg.active) {
+      let already = false;
+      try { already = sessionStorage.getItem("cs_sw_reload") === "1"; } catch (e) {}
+      if (!already) {
+        try { sessionStorage.setItem("cs_sw_reload", "1"); } catch (e) {}
+        location.reload();
+        return false;
+      }
+    }
+    try { if (navigator.serviceWorker.controller) sessionStorage.removeItem("cs_sw_reload"); } catch (e) {}
+
     S.worker = !!navigator.serviceWorker.controller;
     sendTokenToWorker();
     return S.worker;
@@ -660,7 +676,13 @@ async function canStreamNatively(id) {
   if (S.nativeOk !== undefined) return S.nativeOk;   // S.why still holds the reason
   if (!S.token) { S.why = "you are not signed in to Google"; return false; }
   if (!S.worker) await startWorker();
-  if (!S.worker) { S.why = "the helper that adds your sign-in to video requests did not start"; S.nativeOk = false; return false; }
+  if (!S.worker) {
+    S.why = navigator.serviceWorker?.controller === null && "serviceWorker" in navigator
+      ? "this page was opened with the streaming helper bypassed, which a hard reload does. Press Try full quality, or reload normally with F5"
+      : "the helper that adds your sign-in to video requests did not start";
+    S.nativeOk = false;
+    return false;
+  }
   sendTokenToWorker();
   try {
     const r = await fetch(`mediacheck/${id}`, { cache: "no-store" });
@@ -731,6 +753,7 @@ function showMode(kind) {
 
 async function retryNative() {
   S.nativeOk = undefined;
+  if (!navigator.serviceWorker?.controller) { try { sessionStorage.removeItem("cs_sw_reload"); } catch (e) {} }
   await startWorker();
   sendTokenToWorker();
   if (S.current) await play(S.current);
