@@ -70,14 +70,20 @@ async function diagnose(fileId) {
   }
 }
 
+async function report(msg) {
+  const pages = await self.clients.matchAll({ includeUncontrolled: true, type: "window" });
+  for (const p of pages) p.postMessage(msg);
+}
+
 async function stream(fileId, request) {
   let token = TOKEN || await askPagesForToken();
   if (!token) return new Response("No Google session", { status: 401 });
 
+  // always ask for a range: Chrome hides the player's own Range header from
+  // this worker, and a 200 answer makes the player give up
+  const rangeIn = request.headers.get("Range");
   const send = async t => {
-    const headers = { Authorization: "Bearer " + t };
-    const range = request.headers.get("Range");
-    if (range) headers.Range = range;
+    const headers = { Authorization: "Bearer " + t, Range: rangeIn || "bytes=0-" };
     return fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`, {
       headers,
       cache: "no-store"   // the player asks for ranges constantly while seeking
@@ -104,6 +110,16 @@ async function stream(fileId, request) {
   }
   if (!out.has("Accept-Ranges")) out.set("Accept-Ranges", "bytes");
   out.set("Cache-Control", "no-store");
+
+  // Drive sometimes labels a file as a generic download, which the player refuses
+  const type = out.get("Content-Type") || "";
+  if (!type || /octet-stream/i.test(type)) out.set("Content-Type", "video/mp4");
+
+  report({
+    type: "media-log", file: fileId, status: upstream.status,
+    rangeIn: rangeIn || "(none)", contentRange: out.get("Content-Range") || "(none)",
+    contentType: out.get("Content-Type")
+  });
 
   return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: out });
 }

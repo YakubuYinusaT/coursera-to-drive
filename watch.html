@@ -373,6 +373,7 @@ function sendTokenToWorker() {
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.addEventListener("message", e => {
     if (e.data?.type === "need-token") sendTokenToWorker();
+    if (e.data?.type === "media-log") { S.lastMedia = e.data; console.log("[player] stream", e.data); }
   });
 }
 
@@ -750,6 +751,10 @@ function renderNative(item, box) {
   v.addEventListener("error", () => {
     const at = v.currentTime || S.pos[item.id] || 0;
     savePos(item.id, at);
+    const codes = { 1: "playback was aborted", 2: "the connection dropped", 3: "the video could not be decoded", 4: "this video format is not supported by the browser" };
+    S.why = (codes[v.error?.code] || "playback failed") +
+      (S.lastMedia ? ` (Drive sent ${S.lastMedia.status}, ${S.lastMedia.contentType})` : "");
+    console.log("[player] video error", v.error?.code, v.error?.message, S.lastMedia);
     if (retried) {
       // stop rather than bounce between sign-in and playback
       $("playerNote").textContent = "Drive would not stream this lecture. Falling back to the Drive viewer.";
